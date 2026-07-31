@@ -1,26 +1,177 @@
 @import "tailwindcss";
 
+/* ============================================================================
+   NutriSA design tokens — Migration Plan §4.
+   THIS IS THE ONLY FILE IN THE REPO THAT CONTAINS A HEX VALUE.
+   Every hex below appears exactly ONCE. Components reference tokens, never hex.
+   The /styleguide route renders these; it does not restate them.
+   ========================================================================== */
+
+@theme {
+  /* ---- Surfaces (§4.1) ------------------------------------------------- */
+  --color-bg: #0d0f14; /* page background */
+  --color-bg2: #13161e; /* card / panel / modal */
+  --color-bg3: #1a1e29; /* insets, secondary elements, skeletons */
+  --color-border: #242a38; /* 1px borders — one value everywhere */
+
+  /* ---- Text ramp (derived once, frozen Phase 0) ------------------------ */
+  --color-text: #e9ecf2; /* primary   — 16.4:1 on --bg */
+  --color-text-2: #9ba3b4; /* secondary —  7.2:1 on --bg */
+  --color-text-3: #6c7686; /* tertiary  —  4.6:1 on --bg (labels, eyebrows) */
+
+  /* ---- Semantic (§1.5 — colour is meaning, never decoration) ----------- */
+  --color-blue: #0066ff; /* primary / nav / progress / links / focus */
+  --color-green: #22c55e; /* loss / goal achieved / success / on-track */
+  --color-red: #ff3b30; /* gain / over-target / alert / destructive */
+  --color-amber: #f59e0b; /* warning / check-intake / caution */
+
+  /* ---- Macro colours — RESERVED. Never used for anything else. --------- */
+  --color-protein: #a78bfa;
+  --color-carbs: #fcd34d;
+  --color-fats: #2dd4bf;
+
+  /* ---- Typography (§4.2) ----------------------------------------------- */
+  /* Font family vars are injected onto <html> by next/font in layout.tsx.  */
+  /* The display face is NOT declared here — it needs weight and style bound
+     to it, which a theme font key cannot express. See the font-display
+     utility below.                                                         */
+  --font-body: var(--font-barlow), ui-sans-serif, system-ui, sans-serif;
+
+  /* App-scale ramp. In-app the largest element is a stat, not a hero.      */
+  /* rem, not px: respects the reader's browser font-size setting.          */
+  --text-hero: 2.75rem; /* 44px — trend weight, primary dashboard number */
+  --text-hero--line-height: 1;
+  --text-title: 1.5rem; /* 24px — page title */
+  --text-title--line-height: 1.15;
+  --text-section: 1.125rem; /* 18px — section header */
+  --text-section--line-height: 1.3;
+  --text-card: 0.9375rem; /* 15px — card header */
+  --text-card--line-height: 1.35;
+  --text-body: 0.9375rem; /* 15px — body / value text */
+  --text-body--line-height: 1.6;
+  --text-label: 0.75rem; /* 12px — label / meta / eyebrow */
+  --text-label--line-height: 1.2;
+  --text-label--letter-spacing: 0.04em;
+
+  /* ---- Geometry (§4.3) -------------------------------------------------- */
+  /* Never pill-rounded, never 0px-sharp.                                   */
+  --radius-card: 12px; /* cards, modals, inputs, sheets */
+  --radius-btn: 8px; /* buttons, chips, badges, tabs */
+
+  /* Spacing is Tailwind's native scale (--spacing: 0.25rem), which already
+     IS §4.3's 4/8/16/24/32 at 1/2/4/6/8. No override needed.               */
+}
+
+/* ============================================================================
+   Bare-name aliases.
+   CLAUDE.md names the tokens --bg / --blue / --protein etc. Tailwind needs
+   them namespaced (--color-*) to generate utilities. These aliases expose the
+   CLAUDE.md names to raw CSS and to non-Tailwind consumers — Chart.js in
+   Phase 3 reads getComputedStyle(...).getPropertyValue('--blue').
+
+   Every value here is a var() reference. No hex is re-typed.
+   ========================================================================== */
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Family only. The font-display utility binds the weight and style. */
+  --font-display: var(--font-barlow-condensed), ui-sans-serif, system-ui,
+    sans-serif;
+
+  --bg: var(--color-bg);
+  --bg2: var(--color-bg2);
+  --bg3: var(--color-bg3);
+  --border: var(--color-border);
+
+  --text: var(--color-text);
+  --text-2: var(--color-text-2);
+  --text-3: var(--color-text-3);
+
+  --blue: var(--color-blue);
+  --green: var(--color-green);
+  --red: var(--color-red);
+  --amber: var(--color-amber);
+
+  --protein: var(--color-protein);
+  --carbs: var(--color-carbs);
+  --fats: var(--color-fats);
+
+  /* Note: aliased as --radius-btn, NOT --radius-sm. Tailwind v4 ships its own
+     --radius-sm in the default theme; redefining it here would silently break
+     the rounded-sm utility. --radius is free, --radius-sm is not.           */
+  --radius: var(--radius-card);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+/* ============================================================================
+   Base layer
+   ========================================================================== */
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer base {
+  html {
+    color-scheme: dark; /* dark-first is identity, not a theme choice (§1.3) */
+    background-color: var(--color-bg);
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    background-color: var(--color-bg);
+    color: var(--color-text);
+    font-family: var(--font-body);
+    font-size: var(--text-body);
+    line-height: var(--text-body--line-height);
+  }
+
+  /* Keyboard focus is always visible (§4.3). */
+  :focus-visible {
+    outline: 2px solid var(--color-blue);
+    outline-offset: 2px;
+    border-radius: var(--radius-btn);
+  }
+
+  /* Data alignment: columns of weights, macros and dates must line up (§4.2). */
+  th,
+  td,
+  time,
+  output,
+  [data-numeric] {
+    font-variant-numeric: tabular-nums;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* ============================================================================
+   Utilities — the display face (§4.2).
+
+   Barlow Condensed is loaded in exactly ONE cut: 800 italic. Setting only the
+   family lets the browser faux-synthesise a 400-upright from that file, which
+   looks subtly wrong and is easy to miss. Binding all three properties into a
+   single utility makes the correct usage the only usage.
+   ========================================================================== */
+
+@utility font-display {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 800;
+}
+
+/* ============================================================================
+   Utilities — safe-area insets (§4.5).
+   Full-screen means the app owns the whole viewport including the unsafe
+   edges, so padding is applied deliberately rather than avoided.
+   ========================================================================== */
+
+@utility pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+@utility pt-safe {
+  padding-top: env(safe-area-inset-top);
+}
+
+@utility px-safe {
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+
+/* Bottom nav: its own padding plus whatever the home indicator needs. */
+@utility pb-safe-nav {
+  padding-bottom: calc(0.5rem + env(safe-area-inset-bottom));
 }

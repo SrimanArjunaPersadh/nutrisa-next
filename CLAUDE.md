@@ -39,12 +39,37 @@ Loading (skeleton in `--bg3`; camera/OCR get a live "transcribing…" indicator)
 Error (says what happened + what to do, in interface voice, never a silent revert),
 Happy. Track in `STATUS.md`.
 
-## Design tokens (hex lives in the /styleguide route, not in components)
+## Design tokens (hex lives ONLY in `app/globals.css`)
+`app/globals.css` is the one file in the repo containing a hex value, and each hex
+appears exactly once — a Vitest test enforces both. `@theme` holds `--color-*`
+(Tailwind generates `bg-bg2`, `text-text-3`, `rounded-card` from it); the `:root`
+block aliases the bare names `--bg` `--blue` `--protein` etc. as **`var()` references,
+never re-typed hex** (Chart.js reads those in Phase 3). `/styleguide` renders the
+palette by reading the live variables — it documents, it never restates.
+Two unavoidable exceptions: `app/manifest.ts` and `scripts/generate-icons.mjs`, which
+are read before CSS exists. Keep them in lockstep with `--bg`/`--blue`.
+
 Surfaces: `--bg` `--bg2` `--bg3` `--border`. Semantic: `--blue` (primary/nav/
 progress), `--green` (loss/goal/success), `--red` (gain/over-target/alert), `--amber`
 (warning). Macro colours reserved for their macro ONLY: `--protein` `--carbs`
 `--fats`. Dark-first always. Type: Barlow Condensed 800 italic (stats/titles) +
 Barlow 400–600 (body), via `next/font`, `tabular-nums` on data. Touch targets ≥44px.
+**Use the `font-display` utility for the display face** — it binds family + italic +
+800 together. Setting only the family makes the browser faux-synthesise a wrong cut.
+
+## Repo structure & stack facts (Phase 0)
+- **Tailwind v4** — CSS-first. There is no `tailwind.config.js`; tokens live in
+  `@theme` in `globals.css`.
+- **shadcn/ui is NOT installed yet** (Phase 0 decision). Add it in the phase that
+  first needs a primitive, and map its `--background`/`--primary` names onto the
+  tokens above — the §4 names stay canonical.
+- Routes: `app/(tabs)/` route group holds the shared bottom-nav layout; Dashboard is
+  at `/` (no redirect on launch). `/styleguide` sits outside the group.
+- Service worker is hand-written at `public/sw.js`, **production only**. It caches the
+  shell and passes every non-GET, cross-origin and `/api/*` request straight through
+  — that passthrough IS the "no offline write queue" guarantee (Plan §0.3). Never add
+  a cache fallback to it.
+- `npm run icons` regenerates the PWA icon set (currently a placeholder mark).
 
 ## Deterministic functions to port (Plan §6) — pure, typed, Vitest-tested
 `kJtoKcal` (÷4.184), `perServingToPer100g`, `atwaterCheck` (4/4/9), `trendWeight`
