@@ -40,8 +40,10 @@ Error (says what happened + what to do, in interface voice, never a silent rever
 Happy. Track in `STATUS.md`.
 
 ## Design tokens (hex lives ONLY in `app/globals.css`)
-`app/globals.css` is the one file in the repo containing a hex value, and each hex
-appears exactly once — a Vitest test enforces both. `@theme` holds `--color-*`
+`app/globals.css` is the one file of OURS containing a hex value, and each hex
+appears exactly once — a Vitest test enforces both against an explicit file list
+(not a repo-wide scan). `docs/reference/old-index.html` is full of hex and is
+exempt: it is the old app, a read-only reference, never a style source. `@theme` holds `--color-*`
 (Tailwind generates `bg-bg2`, `text-text-3`, `rounded-card` from it); the `:root`
 block aliases the bare names `--bg` `--blue` `--protein` etc. as **`var()` references,
 never re-typed hex** (Chart.js reads those in Phase 3). `/styleguide` renders the
@@ -73,11 +75,24 @@ Barlow 400–600 (body), via `next/font`, `tabular-nums` on data. Touch targets 
   a cache fallback to it.
 - `npm run icons` regenerates the PWA icon set (currently a placeholder mark).
 
-## Deterministic functions to port (Plan §6) — pure, typed, Vitest-tested
-`kJtoKcal` (÷4.184), `perServingToPer100g`, `atwaterCheck` (4/4/9), `trendWeight`
-(exponential smoothing α=0.1: `tw[i]=0.1*w[i]+0.9*tw[i-1]`, frozen), `macrosForQuantity`
-(qty×perUnit, respect `unitType`), `weeklyRate`/`eta` (calendar dates not indices;
-ETA from trend not raw).
+## The deterministic engine — `lib/engine/` (Plan §6, built Phase 1)
+Pure, typed, dependency-free. Nothing here imports React or Supabase. Tests in
+`tests/engine/`; the oracle fixture is `tests/fixtures/weight_logs.json`.
+`kJtoKcal` (÷4.184), `perServingToPer100g` + inverse, `atwaterCheck` (4/4/9, 20%
+of the LABEL's kcal), `clampLabelMacros`, `macrosForQuantity` (qty×perUnit,
+`isGramUnit` picks the basis), `trendWeight`, `weeklyRate`, `eta`.
+- **`trendWeight` rounds 2dp EVERY step and feeds the rounded value forward**:
+  `tw[i]=round(0.1*w[i]+0.9*tw[i-1], 2)`, seed `tw[0]=w[0]` unrounded, via
+  `+n.toFixed(2)` (never `Math.round`). This matches the old app, NOT the clean
+  formula. Frozen — do not "clean up". `docs/PHASE-1-DECISIONS.md` §1.
+- Engine returns **numbers, never formatted strings**. Rounding that gets
+  persisted or feeds more arithmetic is engine; rounding that only renders is
+  display. `eta` returns `no-data`/`reached`/`projected`+`Date`.
+- `weeklyRate`/`eta` use calendar dates not indices, and the TREND not raw.
+  `eta` projects at an assumed 0.5 kg/wk and counts from today — both are
+  carried-forward old-app quirks, deliberate.
+- `unitType` is an OPEN string, not a closed union — users type their own unit
+  names. Only `g`/`ml` are special (per-100 basis); everything else is per-unit.
 
 ## How we work
 - Plan in Claude.ai first; build in Claude Code. One phase = one branch = one fresh
@@ -91,4 +106,5 @@ ETA from trend not raw).
 - Shell is **PowerShell 5.1 — no `&&`.** One command per line.
 
 ## Current phase
-Phase 0 — scaffold, tokens, PWA shell, tab nav, repo-memory files. See `plan.md`.
+Phase 1 — deterministic engine + first Vitest tests. See `plan.md`.
+Phase 0 (scaffold, tokens, PWA shell, tab nav, repo-memory files) is merged.

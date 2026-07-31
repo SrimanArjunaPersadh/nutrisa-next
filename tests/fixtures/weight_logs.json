@@ -1,0 +1,201 @@
+{
+  "_meta": {
+    "source": "weight_logs, NutriSA Supabase, exported 2026-07-31",
+    "offsetKg": -9.0,
+    "note": "Weights and expectedTrend are OFFSET by offsetKg from real values for POPIA (public repo). Relationships between consecutive values are preserved, so trend/rate/eta math is identical. Reverse by subtracting offsetKg.",
+    "trendAlgorithm": "oracle: tw[i]=round(0.1*w[i]+0.9*tw[i-1], 2), seed tw[0]=w[0]. 2dp rounding fed forward. Matches old app; NOT the clean unrounded formula.",
+    "gaps": "37-day gap 2026-06-17 -> 2026-07-24 is intentional and load-bearing: the 24 Jul row tests gap-handling. Two 4-day gaps in June.",
+    "screenConfirmed": "4 dates carry screenConfirmed = trend value read off the OLD app screen (offset applied). All 4 matched oracle computation to display precision on 2026-07-31. 24 Jul (post-gap) is the circularity-breaking check.",
+    "rowCount": 36,
+    "dateRange": [
+      "2026-05-05",
+      "2026-07-24"
+    ]
+  },
+  "weight_logs": [
+    {
+      "date": "2026-05-05",
+      "weight": 91.1,
+      "expectedTrend": 91.1
+    },
+    {
+      "date": "2026-05-07",
+      "weight": 88.9,
+      "expectedTrend": 90.88
+    },
+    {
+      "date": "2026-05-08",
+      "weight": 89.8,
+      "expectedTrend": 90.77
+    },
+    {
+      "date": "2026-05-09",
+      "weight": 90.3,
+      "expectedTrend": 90.72,
+      "screenConfirmed": 90.7
+    },
+    {
+      "date": "2026-05-12",
+      "weight": 90.3,
+      "expectedTrend": 90.68
+    },
+    {
+      "date": "2026-05-13",
+      "weight": 89.9,
+      "expectedTrend": 90.6
+    },
+    {
+      "date": "2026-05-14",
+      "weight": 89.5,
+      "expectedTrend": 90.49
+    },
+    {
+      "date": "2026-05-15",
+      "weight": 90.0,
+      "expectedTrend": 90.44
+    },
+    {
+      "date": "2026-05-16",
+      "weight": 89.7,
+      "expectedTrend": 90.37
+    },
+    {
+      "date": "2026-05-17",
+      "weight": 89.5,
+      "expectedTrend": 90.28
+    },
+    {
+      "date": "2026-05-18",
+      "weight": 89.8,
+      "expectedTrend": 90.23
+    },
+    {
+      "date": "2026-05-19",
+      "weight": 88.5,
+      "expectedTrend": 90.06
+    },
+    {
+      "date": "2026-05-20",
+      "weight": 88.7,
+      "expectedTrend": 89.92
+    },
+    {
+      "date": "2026-05-21",
+      "weight": 88.8,
+      "expectedTrend": 89.81
+    },
+    {
+      "date": "2026-05-22",
+      "weight": 89.3,
+      "expectedTrend": 89.76
+    },
+    {
+      "date": "2026-05-23",
+      "weight": 89.2,
+      "expectedTrend": 89.7
+    },
+    {
+      "date": "2026-05-24",
+      "weight": 89.5,
+      "expectedTrend": 89.68
+    },
+    {
+      "date": "2026-05-25",
+      "weight": 89.6,
+      "expectedTrend": 89.67
+    },
+    {
+      "date": "2026-05-26",
+      "weight": 89.2,
+      "expectedTrend": 89.62
+    },
+    {
+      "date": "2026-05-27",
+      "weight": 89.0,
+      "expectedTrend": 89.56
+    },
+    {
+      "date": "2026-05-28",
+      "weight": 88.1,
+      "expectedTrend": 89.41
+    },
+    {
+      "date": "2026-05-29",
+      "weight": 88.3,
+      "expectedTrend": 89.3
+    },
+    {
+      "date": "2026-05-30",
+      "weight": 89.1,
+      "expectedTrend": 89.28,
+      "screenConfirmed": 89.3
+    },
+    {
+      "date": "2026-05-31",
+      "weight": 88.2,
+      "expectedTrend": 89.17
+    },
+    {
+      "date": "2026-06-01",
+      "weight": 87.3,
+      "expectedTrend": 88.98
+    },
+    {
+      "date": "2026-06-02",
+      "weight": 87.45,
+      "expectedTrend": 88.83
+    },
+    {
+      "date": "2026-06-03",
+      "weight": 87.9,
+      "expectedTrend": 88.74
+    },
+    {
+      "date": "2026-06-04",
+      "weight": 88.9,
+      "expectedTrend": 88.76
+    },
+    {
+      "date": "2026-06-05",
+      "weight": 89.1,
+      "expectedTrend": 88.79
+    },
+    {
+      "date": "2026-06-09",
+      "weight": 88.0,
+      "expectedTrend": 88.71
+    },
+    {
+      "date": "2026-06-10",
+      "weight": 87.9,
+      "expectedTrend": 88.63
+    },
+    {
+      "date": "2026-06-14",
+      "weight": 89.4,
+      "expectedTrend": 88.71
+    },
+    {
+      "date": "2026-06-15",
+      "weight": 89.2,
+      "expectedTrend": 88.76
+    },
+    {
+      "date": "2026-06-16",
+      "weight": 88.5,
+      "expectedTrend": 88.73,
+      "screenConfirmed": 88.7
+    },
+    {
+      "date": "2026-06-17",
+      "weight": 88.9,
+      "expectedTrend": 88.75
+    },
+    {
+      "date": "2026-07-24",
+      "weight": 90.0,
+      "expectedTrend": 88.88,
+      "screenConfirmed": 88.9
+    }
+  ]
+}

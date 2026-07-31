@@ -21,6 +21,7 @@
 | Version | Date | Author | Change |
 |---|---|---|---|
 | v1.0 | 2026-07-31 | Owner + Claude | Initial plan |
+| v1.2 | 2026-07-31 | Owner + Claude Code | Phase 1 amendment, no scope change: §6's `trendWeight` formula corrected to the OLD APP's actual algorithm (2 dp rounded every step, fed forward) — the v1.1 line stated a clean formula the app has never run. Ruled by the correctness oracle. Full reasoning and all Phase 1 rulings in `docs/PHASE-1-DECISIONS.md` |
 | v1.1 | 2026-07-31 | Owner + Claude | Defect fixes only, no scope change: (1) all dead "§12" cross-references corrected to §11 (deferred log); (2) §5 "Five surfaces" corrected to four; (3) Coach-migration-first precondition made explicit in §0.1 (was silently assumed by §2's "reuse the muscle memory" rationale); (4) `CLAUDE.md` / `plan.md` / `STATUS.md` contents now specified in §9.2, seeded in Phase 0, and §4.4's matrix reference repointed accordingly |
 
 ---
@@ -321,7 +322,7 @@ unit tests (Vitest):
 | `kJtoKcal(kJ)` | ÷ 4.184. Never let the model return kcal directly from a label — it reads the kJ printed, code converts |
 | `perServingToPer100g(value, servingG)` | Canonical storage is per-100g. Code rescales. Model reports the printed per-serving value + serving size only |
 | `atwaterCheck(kcal, p, c, f)` | 4/4/9 reconstruction within tolerance → flags an implausible OCR read. Code decides plausibility, not the model |
-| `trendWeight(series)` | Exponential smoothing **α=0.1**: `tw[i] = 0.1*w[i] + 0.9*tw[i-1]`. Frozen. Same as MacroFactor |
+| `trendWeight(series)` | Exponential smoothing **α=0.1**, rounded 2 dp EVERY step with the rounded value fed forward: `tw[i] = round(0.1*w[i] + 0.9*tw[i-1], 2)`, seeded `tw[0] = w[0]` **unrounded**. Frozen. **Amended v1.2** — v1.1 stated the clean unrounded formula, which the old app has never run; the per-step rounding drifts from it by −0.0061 kg over the 36-row fixture. A fidelity choice, mildly worse numerically, kept to match the oracle. Do not "clean up" without deliberate re-verification (`docs/PHASE-1-DECISIONS.md` §1) |
 | `macrosForQuantity(food, qty)` | `qty × perUnit`, respecting `unitType`. No model involvement, ever |
 | `weeklyRate` / `eta` | Weekly rate from CALENDAR dates (not array indices — carried-forward fix); ETA from TREND weight (not raw — carried-forward fix) |
 
