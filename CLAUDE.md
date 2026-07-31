@@ -46,8 +46,10 @@ appears exactly once — a Vitest test enforces both. `@theme` holds `--color-*`
 block aliases the bare names `--bg` `--blue` `--protein` etc. as **`var()` references,
 never re-typed hex** (Chart.js reads those in Phase 3). `/styleguide` renders the
 palette by reading the live variables — it documents, it never restates.
-Two unavoidable exceptions: `app/manifest.ts` and `scripts/generate-icons.mjs`, which
-are read before CSS exists. Keep them in lockstep with `--bg`/`--blue`.
+Three unavoidable exceptions, all read before CSS exists: `app/layout.tsx`
+(`viewport.themeColor`), `app/manifest.ts` (`theme_color`/`background_color`) and
+`scripts/generate-icons.mjs`. Nothing enforces their agreement — if you change `--bg`
+or `--blue`, grep the repo for the old hex and update all four sites by hand.
 
 Surfaces: `--bg` `--bg2` `--bg3` `--border`. Semantic: `--blue` (primary/nav/
 progress), `--green` (loss/goal/success), `--red` (gain/over-target/alert), `--amber`

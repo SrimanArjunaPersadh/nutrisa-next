@@ -68,6 +68,62 @@ function rootAliasBlock(): string {
   return CSS.slice(start, end);
 }
 
+/**
+ * Files that MUST restate a brand hex because they are read before any
+ * stylesheet exists, and so cannot reference a CSS variable.
+ */
+const OUT_OF_CSS = [
+  { file: "app/layout.tsx", why: "viewport.themeColor — paints the status bar" },
+  { file: "app/manifest.ts", why: "theme_color / background_color — the splash" },
+  { file: "scripts/generate-icons.mjs", why: "rasterises the icon PNGs" },
+] as const;
+
+function readRepoFile(relative: string): string {
+  return readFileSync(path.join(process.cwd(), ...relative.split("/")), "utf8");
+}
+
+/** Pull a token's authored value straight out of globals.css. */
+function tokenValue(token: string): string {
+  const match = CSS.match(new RegExp(`${token}:\\s*(#[0-9a-fA-F]{3,8})`));
+  expect(match, `${token} must be declared with a hex in globals.css`).not.toBeNull();
+  return match![1].toLowerCase();
+}
+
+describe("brand hex agreement outside CSS", () => {
+  const bg = tokenValue("--color-bg");
+  const blue = tokenValue("--color-blue");
+  const allowed = new Set([bg, blue]);
+
+  it.each(OUT_OF_CSS)("$file uses no brand hex that globals.css disagrees with", ({ file }) => {
+    const source = readRepoFile(file);
+    const found = (source.match(HEX) ?? []).map((hex) => hex.toLowerCase());
+
+    const drifted = found.filter((hex) => !allowed.has(hex));
+
+    expect(
+      drifted,
+      `${file} contains hex not declared in globals.css: ${drifted.join(", ")}. ` +
+        `If --bg or --blue changed, update this file to match.`,
+    ).toEqual([]);
+  });
+
+  it("app/layout.tsx themeColor matches --bg", () => {
+    expect(readRepoFile("app/layout.tsx")).toContain(bg);
+  });
+
+  it("app/manifest.ts theme_color and background_color match --bg", () => {
+    const source = readRepoFile("app/manifest.ts");
+    expect(source).toContain(`theme_color: "${bg}"`);
+    expect(source).toContain(`background_color: "${bg}"`);
+  });
+
+  it("scripts/generate-icons.mjs BG and BLUE match their tokens", () => {
+    const source = readRepoFile("scripts/generate-icons.mjs");
+    expect(source).toContain(`const BG = "${bg}"`);
+    expect(source).toContain(`const BLUE = "${blue}"`);
+  });
+});
+
 describe("design tokens", () => {
   it("declares every token CLAUDE.md names", () => {
     for (const token of REQUIRED_TOKENS) {

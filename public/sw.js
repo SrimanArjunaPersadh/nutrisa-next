@@ -86,6 +86,14 @@ self.addEventListener("fetch", (event) => {
   // Route handlers (/api/ocr-label and friends) are data, never shell.
   if (url.pathname.startsWith("/api/")) return;
 
+  /* Next's client-side router fetches "/weight?_rsc=<hash>" on every tab tap.
+   * The hash changes per navigation, not per build, so these are single-use:
+   * caching them fills the store with entries that can never be hit again
+   * (measured: 18 dead entries out of 43 after a handful of taps). Serve them
+   * from the network, and when offline fall through to the precached document
+   * for that path instead. */
+  const isRscRequest = url.searchParams.has("_rsc");
+
   /* ---- Cache-first: immutable assets ----------------------------------- */
 
   if (isStaticAsset(url)) {
@@ -112,7 +120,7 @@ self.addEventListener("fetch", (event) => {
   event.respondWith(
     fetch(request)
       .then((response) => {
-        if (response.ok && response.type === "basic") {
+        if (response.ok && response.type === "basic" && !isRscRequest) {
           const copy = response.clone();
           caches.open(CACHE_VERSION).then((cache) => cache.put(request, copy));
         }
@@ -121,6 +129,14 @@ self.addEventListener("fetch", (event) => {
       .catch(async () => {
         const cached = await caches.match(request);
         if (cached) return cached;
+
+        // An RSC fetch offline: the exact URL was never cached, but the
+        // document for that path was precached. ignoreSearch drops the _rsc
+        // hash so the tab tap resolves instead of hard-failing.
+        if (isRscRequest) {
+          const doc = await caches.match(url.pathname, { ignoreSearch: true });
+          if (doc) return doc;
+        }
 
         // An uncached route while offline still gets the shell rather than the
         // browser's offline dinosaur.

@@ -24,11 +24,6 @@ function isIos(): boolean {
   return /iphone|ipad|ipod/i.test(window.navigator.userAgent);
 }
 
-/**
- * A quiet, dismissible Add-to-Home-Screen affordance (§4.5) — not a nag.
- * Dismissal is remembered. iOS gets the manual hint because it has no
- * beforeinstallprompt event.
- */
 /** None of these change within a session, so the store never needs to notify. */
 const NEVER_CHANGES = () => () => {};
 
@@ -39,6 +34,11 @@ function iosEligibleSnapshot(): boolean {
   );
 }
 
+/**
+ * A quiet, dismissible Add-to-Home-Screen affordance (§4.5) — not a nag.
+ * Dismissal is remembered. iOS gets the manual hint because it has no
+ * beforeinstallprompt event.
+ */
 export function InstallPrompt() {
   const [installEvent, setInstallEvent] =
     useState<BeforeInstallPromptEvent | null>(null);
@@ -86,11 +86,18 @@ export function InstallPrompt() {
   const install = async () => {
     if (!installEvent) return;
     await installEvent.prompt();
-    await installEvent.userChoice;
-    // Either outcome retires the prompt: accepted installs it, dismissed is
-    // an answer we respect rather than re-ask on the next page view.
+    const { outcome } = await installEvent.userChoice;
+
+    // Hide the bar either way — the question has been asked and answered.
     setInstallEvent(null);
-    localStorage.setItem(DISMISS_KEY, "1");
+
+    // Only "accepted" is persisted. Cancelling or swiping away the browser's
+    // native sheet is easy to do by accident, and persisting it would leave no
+    // route back to the prompt short of clearing site data. The explicit X
+    // button is the deliberate "stop offering" signal; this is not.
+    if (outcome === "accepted") {
+      localStorage.setItem(DISMISS_KEY, "1");
+    }
   };
 
   const showIosHint = iosEligible && !dismissed;

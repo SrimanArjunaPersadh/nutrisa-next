@@ -40,6 +40,23 @@ Recorded because both are the kind of thing that silently reappears.
    `useSyncExternalStore` over a module-cached snapshot: the stylesheet is
    render-blocking, so the values are available at first client render.
 
+## Known gap — the hex invariant is only half enforced
+
+`tests/tokens.test.ts` guarantees "each hex exactly once" **within
+`app/globals.css` only**. Three files outside CSS necessarily restate `--bg`
+or `--blue`, because each is read before any stylesheet exists:
+
+| File | Value | Why it cannot reference a CSS variable |
+|---|---|---|
+| `app/layout.tsx` | `viewport.themeColor` | The browser reads it to paint the status bar pre-CSS |
+| `app/manifest.ts` | `theme_color`, `background_color` | JSON manifest; drives the splash screen |
+| `scripts/generate-icons.mjs` | `BG`, `BLUE` | Rasterises PNGs at build time |
+
+Nothing currently fails if these drift from `globals.css`. Changing `--bg` or
+`--blue` means grepping for the old hex and updating all four sites by hand.
+Extending the token test to assert cross-file agreement is the obvious fix and
+is logged as a follow-up, not done in Phase 0.
+
 ## Deliberately NOT done in Phase 0
 
 Supabase client, any §6 function, any chart, shadcn, real icon artwork, the
