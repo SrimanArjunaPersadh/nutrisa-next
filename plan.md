@@ -8,7 +8,7 @@ previous one is merged.
 | Done | Phase | Branch | Merged (date) |
 |------|-------|--------|---------------|
 | [x] | 0 — New repo, scaffold, tokens, PWA shell, tab nav, repo-memory files | `phase-0-scaffold` | 2026-07-31 |
-| [ ] | 1 — Deterministic engine + first Vitest tests (correctness oracle) | `phase-1-engine` | |
+| [x] | 1 — Deterministic engine + first Vitest tests (correctness oracle) | `phase-1-engine` | 2026-07-31 |
 | [ ] | 2 — Supabase data layer (typed client, 4 existing tables, no schema change) | `phase-2-data` | |
 | [ ] | 3 — Weight tab (chart + trend + target + goal, filter, history, date picker) | `phase-3-weight` | |
 | [ ] | 4 — Nutrition tab (macro tiles, logged meals, water, copy-yesterday) | `phase-4-nutrition` | |
