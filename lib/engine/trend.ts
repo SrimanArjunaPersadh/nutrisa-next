@@ -43,11 +43,19 @@ function round2(n: number): number {
  * Milliseconds for an ISO date, parsed as UTC midnight like the old app.
  *
  * Takes the `YYYY-MM-DD` prefix so a full timestamp (`2026-07-24T00:00:00+00:00`)
- * parses too. `weight_logs.date` is a bare date today, but a naive
- * `Date.parse(date + "T00:00:00Z")` on a timestamp yields NaN, and NaN would make
- * `weeklyRate` return `null` — a missing rate with no error anywhere, which is the
- * hardest kind of wrong to notice. A weigh-in is a calendar day, so the day prefix
- * is the right unit regardless of what shape the row arrives in.
+ * parses too.
+ *
+ * CONFIRMED 2026-07-31 against the live DB (Phase 2 survey): `weight_logs.date`
+ * returns a BARE `YYYY-MM-DD`, on all 36 rows, as do `meal_logs.date` and
+ * `water_logs.date`. The old app's comment claiming Supabase returns
+ * `'YYYY-MM-DDT00:00:00'` for date columns (old-index.html:1882) is wrong, and its
+ * `.slice(0,10)` is a no-op.
+ *
+ * The prefix guard STAYS anyway: a naive `Date.parse(date + "T00:00:00Z")` on a
+ * timestamp yields NaN, and NaN would make `weeklyRate` return `null` — a missing
+ * rate with no error anywhere, the hardest kind of wrong to notice. A weigh-in is a
+ * calendar day, so the day prefix is the right unit whatever shape the row arrives
+ * in. Cheap insurance against a column type that is not ours to control.
  *
  * @throws if no parseable date is present, rather than poisoning the arithmetic.
  */

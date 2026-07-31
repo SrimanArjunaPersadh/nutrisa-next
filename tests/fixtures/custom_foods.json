@@ -1,0 +1,1305 @@
+{
+  "_meta": {
+    "source": "live DB 2026-07-31",
+    "scrubbed": "row ids synthetic; per100/per_unit macros VERBATIM",
+    "expectedFrom": "old-index.html:1959-1969 (mapping) and 900-919 (foodMacros), both transcribed independently",
+    "note": "Closes the Phase 1 gap: macrosForQuantity is now oracled against STORED rows, not only FOOD_DB literals. Units include '2 biscuits' and 'pops' — live proof unitType had to be typed open."
+  },
+  "rows": [
+    {
+      "row": {
+        "id": "00000000-0000-4000-8000-000000000014",
+        "name": "Koo Baked Beans",
+        "cat": "Protein",
+        "unit": "g",
+        "default_qty": 100,
+        "per100": {
+          "fat": 0.5,
+          "pro": 5,
+          "carb": 15,
+          "kcal": 85
+        },
+        "per_unit": null,
+        "unit_label": null,
+        "barcode": "6001087001234",
+        "created_at": "2026-06-10T01:01:47.083934+00:00"
+      },
+      "expected": {
+        "_id": "00000000-0000-4000-8000-000000000014",
+        "name": "Koo Baked Beans",
+        "cat": "Protein",
+        "unit": "g",
+        "defaultQty": 100,
+        "per100": {
+          "fat": 0.5,
+          "pro": 5,
+          "carb": 15,
+          "kcal": 85
+        },
+        "barcode": "6001087001234"
+      }
+    },
+    {
+      "row": {
+        "id": "00000000-0000-4000-8000-000000000015",
+        "name": "Albany Superior White Bread",
+        "cat": "Carb",
+        "unit": "slice",
+        "default_qty": 1,
+        "per100": null,
+        "per_unit": {
+          "fat": 3.35,
+          "pro": 3.35,
+          "carb": 17.5,
+          "kcal": 92.5
+        },
+        "unit_label": "slice",
+        "barcode": "6001253010178",
+        "created_at": "2026-06-10T01:50:01.586676+00:00"
+      },
+      "expected": {
+        "_id": "00000000-0000-4000-8000-000000000015",
+        "name": "Albany Superior White Bread",
+        "cat": "Carb",
+        "unit": "slice",
+        "defaultQty": 1,
+        "perUnit": {
+          "fat": 3.35,
+          "pro": 3.35,
+          "carb": 17.5,
+          "kcal": 92.5
+        },
+        "unitLabel": "slice",
+        "barcode": "6001253010178"
+      }
+    },
+    {
+      "row": {
+        "id": "00000000-0000-4000-8000-000000000016",
+        "name": "Sweet Chilli Sauce",
+        "cat": "Condiment",
+        "unit": "ml",
+        "default_qty": 100,
+        "per100": {
+          "fat": 0.7,
+          "pro": 0.7,
+          "carb": 48,
+          "kcal": 208
+        },
+        "per_unit": null,
+        "unit_label": null,
+        "barcode": "6001030002075",
+        "created_at": "2026-06-10T14:02:39.048686+00:00"
+      },
+      "expected": {
+        "_id": "00000000-0000-4000-8000-000000000016",
+        "name": "Sweet Chilli Sauce",
+        "cat": "Condiment",
+        "unit": "ml",
+        "defaultQty": 100,
+        "per100": {
+          "fat": 0.7,
+          "pro": 0.7,
+          "carb": 48,
+          "kcal": 208
+        },
+        "barcode": "6001030002075"
+      }
+    },
+    {
+      "row": {
+        "id": "00000000-0000-4000-8000-000000000017",
+        "name": "Nola Mayonnaise",
+        "cat": "Condiment",
+        "unit": "g",
+        "default_qty": 15,
+        "per100": {
+          "fat": 7.9,
+          "pro": 0.1,
+          "carb": 1,
+          "kcal": 71
+        },
+        "per_unit": null,
+        "unit_label": null,
+        "barcode": "6001069019501",
+        "created_at": "2026-06-10T14:04:46.534203+00:00"
+      },
+      "expected": {
+        "_id": "00000000-0000-4000-8000-000000000017",
+        "name": "Nola Mayonnaise",
+        "cat": "Condiment",
+        "unit": "g",
+        "defaultQty": 15,
+        "per100": {
+          "fat": 7.9,
+          "pro": 0.1,
+          "carb": 1,
+          "kcal": 71
+        },
+        "barcode": "6001069019501"
+      }
+    },
+    {
+      "row": {
+        "id": "00000000-0000-4000-8000-000000000018",
+        "name": "Spar Seeded Burger Roll",
+        "cat": "Carb",
+        "unit": "roll",
+        "default_qty": 1,
+        "per100": null,
+        "per_unit": {
+          "fat": 2.43,
+          "pro": 4.2,
+          "carb": 34.56,
+          "kcal": 176
+        },
+        "unit_label": "roll",
+        "barcode": "2019406036009",
+        "created_at": "2026-06-10T19:26:40.547357+00:00"
+      },
+      "expected": {
+        "_id": "00000000-0000-4000-8000-000000000018",
+        "name": "Spar Seeded Burger Roll",
+        "cat": "Carb",
+        "unit": "roll",
+        "defaultQty": 1,
+        "perUnit": {
+          "fat": 2.43,
+          "pro": 4.2,
+          "carb": 34.56,
+          "kcal": 176
+        },
+        "unitLabel": "roll",
+        "barcode": "2019406036009"
+      }
+    },
+    {
+      "row": {
+        "id": "00000000-0000-4000-8000-000000000019",
+        "name": "Bokomo Weet bix",
+        "cat": "Carb",
+        "unit": "biscuit",
+        "default_qty": 1,
+        "per100": null,
+        "per_unit": {
+          "fat": 0.8,
+          "pro": 3.9,
+          "carb": 25.8,
+          "kcal": 136.3
+        },
+        "unit_label": "biscuit (40g)",
+        "barcode": "6001052013240",
+        "created_at": "2026-06-16T23:52:19.566765+00:00"
+      },
+      "expected": {
+        "_id": "00000000-0000-4000-8000-000000000019",
+        "name": "Bokomo Weet bix",
+        "cat": "Carb",
+        "unit": "biscuit",
+        "defaultQty": 1,
+        "perUnit": {
+          "fat": 0.8,
+          "pro": 3.9,
+          "carb": 25.8,
+          "kcal": 136.3
+        },
+        "unitLabel": "biscuit (40g)",
+        "barcode": "6001052013240"
+      }
+    },
+    {
+      "row": {
+        "id": "00000000-0000-4000-8000-000000000020",
+        "name": "The Gourmet Greek Low Fat Strained Greek Yoghurt",
+        "cat": "Protein",
+        "unit": "g",
+        "default_qty": 150,
+        "per100": {
+          "fat": 0.73,
+          "pro": 9.53,
+          "carb": 2,
+          "kcal": 52.8
+        },
+        "per_unit": null,
+        "unit_label": null,
+        "barcode": "6009879744590",
+        "created_at": "2026-06-16T23:56:23.482194+00:00"
+      },
+      "expected": {
+        "_id": "00000000-0000-4000-8000-000000000020",
+        "name": "The Gourmet Greek Low Fat Strained Greek Yoghurt",
+        "cat": "Protein",
+        "unit": "g",
+        "defaultQty": 150,
+        "per100": {
+          "fat": 0.73,
+          "pro": 9.53,
+          "carb": 2,
+          "kcal": 52.8
+        },
+        "barcode": "6009879744590"
+      }
+    },
+    {
+      "row": {
+        "id": "00000000-0000-4000-8000-000000000021",
+        "name": "Bakers Classic Choc-Kits",
+        "cat": "Fat",
+        "unit": "2 biscuits",
+        "default_qty": 1,
+        "per100": null,
+        "per_unit": {
+          "fat": 5.9,
+          "pro": 1.6,
+          "carb": 0,
+          "kcal": 124
+        },
+        "unit_label": "2 biscuits (25g)",
+        "barcode": "6001056119009",
+        "created_at": "2026-06-17T03:14:29.000947+00:00"
+      },
+      "expected": {
+        "_id": "00000000-0000-4000-8000-000000000021",
+        "name": "Bakers Classic Choc-Kits",
+        "cat": "Fat",
+        "unit": "2 biscuits",
+        "defaultQty": 1,
+        "perUnit": {
+          "fat": 5.9,
+          "pro": 1.6,
+          "carb": 0,
+          "kcal": 124
+        },
+        "unitLabel": "2 biscuits (25g)",
+        "barcode": "6001056119009"
+      }
+    },
+    {
+      "row": {
+        "id": "00000000-0000-4000-8000-000000000022",
+        "name": "Deluxe Greek 60% strained Greek yoghurt",
+        "cat": "Protein",
+        "unit": "ml",
+        "default_qty": 250,
+        "per100": {
+          "fat": 13,
+          "pro": 11,
+          "carb": 4,
+          "kcal": 152
+        },
+        "per_unit": null,
+        "unit_label": null,
+        "barcode": "0700083644824",
+        "created_at": "2026-06-17T11:06:13.775712+00:00"
+      },
+      "expected": {
+        "_id": "00000000-0000-4000-8000-000000000022",
+        "name": "Deluxe Greek 60% strained Greek yoghurt",
+        "cat": "Protein",
+        "unit": "ml",
+        "defaultQty": 250,
+        "per100": {
+          "fat": 13,
+          "pro": 11,
+          "carb": 4,
+          "kcal": 152
+        },
+        "barcode": "0700083644824"
+      }
+    },
+    {
+      "row": {
+        "id": "00000000-0000-4000-8000-000000000023",
+        "name": "Albany SUPERIOR BROWN BREAD",
+        "cat": "Carb",
+        "unit": "2 slices",
+        "default_qty": 80,
+        "per100": null,
+        "per_unit": {
+          "fat": 1.5,
+          "pro": 6.6,
+          "carb": 34,
+          "kcal": 179
+        },
+        "unit_label": "2 slices",
+        "barcode": "6001253010185",
+        "created_at": "2026-06-22T11:36:00.133597+00:00"
+      },
+      "expected": {
+        "_id": "00000000-0000-4000-8000-000000000023",
+        "name": "Albany SUPERIOR BROWN BREAD",
+        "cat": "Carb",
+        "unit": "2 slices",
+        "defaultQty": 80,
+        "perUnit": {
+          "fat": 1.5,
+          "pro": 6.6,
+          "carb": 34,
+          "kcal": 179
+        },
+        "unitLabel": "2 slices",
+        "barcode": "6001253010185"
+      }
+    },
+    {
+      "row": {
+        "id": "00000000-0000-4000-8000-000000000024",
+        "name": "Fry’s Play based chicken popcorn",
+        "cat": "Protein",
+        "unit": "pops",
+        "default_qty": 1,
+        "per100": null,
+        "per_unit": {
+          "fat": 1.4,
+          "pro": 2,
+          "carb": 1.7,
+          "kcal": 29.5
+        },
+        "unit_label": "pops (18.75g)",
+        "barcode": "6009712300105",
+        "created_at": "2026-07-10T21:53:05.76524+00:00"
+      },
+      "expected": {
+        "_id": "00000000-0000-4000-8000-000000000024",
+        "name": "Fry’s Play based chicken popcorn",
+        "cat": "Protein",
+        "unit": "pops",
+        "defaultQty": 1,
+        "perUnit": {
+          "fat": 1.4,
+          "pro": 2,
+          "carb": 1.7,
+          "kcal": 29.5
+        },
+        "unitLabel": "pops (18.75g)",
+        "barcode": "6009712300105"
+      }
+    }
+  ],
+  "macrosForQuantity": [
+    {
+      "name": "Koo Baked Beans",
+      "unit": "g",
+      "basis": "per100",
+      "qty": 1,
+      "expected": {
+        "kcal": 1,
+        "pro": 0.1,
+        "carb": 0.1,
+        "fat": 0
+      }
+    },
+    {
+      "name": "Koo Baked Beans",
+      "unit": "g",
+      "basis": "per100",
+      "qty": 2,
+      "expected": {
+        "kcal": 2,
+        "pro": 0.1,
+        "carb": 0.3,
+        "fat": 0
+      }
+    },
+    {
+      "name": "Koo Baked Beans",
+      "unit": "g",
+      "basis": "per100",
+      "qty": 0.5,
+      "expected": {
+        "kcal": 0,
+        "pro": 0,
+        "carb": 0.1,
+        "fat": 0
+      }
+    },
+    {
+      "name": "Koo Baked Beans",
+      "unit": "g",
+      "basis": "per100",
+      "qty": 30,
+      "expected": {
+        "kcal": 26,
+        "pro": 1.5,
+        "carb": 4.5,
+        "fat": 0.1
+      }
+    },
+    {
+      "name": "Koo Baked Beans",
+      "unit": "g",
+      "basis": "per100",
+      "qty": 100,
+      "expected": {
+        "kcal": 85,
+        "pro": 5,
+        "carb": 15,
+        "fat": 0.5
+      }
+    },
+    {
+      "name": "Koo Baked Beans",
+      "unit": "g",
+      "basis": "per100",
+      "qty": 150,
+      "expected": {
+        "kcal": 128,
+        "pro": 7.5,
+        "carb": 22.5,
+        "fat": 0.8
+      }
+    },
+    {
+      "name": "Koo Baked Beans",
+      "unit": "g",
+      "basis": "per100",
+      "qty": 250,
+      "expected": {
+        "kcal": 213,
+        "pro": 12.5,
+        "carb": 37.5,
+        "fat": 1.3
+      }
+    },
+    {
+      "name": "Albany Superior White Bread",
+      "unit": "slice",
+      "basis": "perUnit",
+      "qty": 1,
+      "expected": {
+        "kcal": 93,
+        "pro": 3.4,
+        "carb": 17.5,
+        "fat": 3.4
+      }
+    },
+    {
+      "name": "Albany Superior White Bread",
+      "unit": "slice",
+      "basis": "perUnit",
+      "qty": 2,
+      "expected": {
+        "kcal": 185,
+        "pro": 6.7,
+        "carb": 35,
+        "fat": 6.7
+      }
+    },
+    {
+      "name": "Albany Superior White Bread",
+      "unit": "slice",
+      "basis": "perUnit",
+      "qty": 0.5,
+      "expected": {
+        "kcal": 46,
+        "pro": 1.7,
+        "carb": 8.8,
+        "fat": 1.7
+      }
+    },
+    {
+      "name": "Albany Superior White Bread",
+      "unit": "slice",
+      "basis": "perUnit",
+      "qty": 30,
+      "expected": {
+        "kcal": 2775,
+        "pro": 100.5,
+        "carb": 525,
+        "fat": 100.5
+      }
+    },
+    {
+      "name": "Albany Superior White Bread",
+      "unit": "slice",
+      "basis": "perUnit",
+      "qty": 100,
+      "expected": {
+        "kcal": 9250,
+        "pro": 335,
+        "carb": 1750,
+        "fat": 335
+      }
+    },
+    {
+      "name": "Albany Superior White Bread",
+      "unit": "slice",
+      "basis": "perUnit",
+      "qty": 150,
+      "expected": {
+        "kcal": 13875,
+        "pro": 502.5,
+        "carb": 2625,
+        "fat": 502.5
+      }
+    },
+    {
+      "name": "Albany Superior White Bread",
+      "unit": "slice",
+      "basis": "perUnit",
+      "qty": 250,
+      "expected": {
+        "kcal": 23125,
+        "pro": 837.5,
+        "carb": 4375,
+        "fat": 837.5
+      }
+    },
+    {
+      "name": "Sweet Chilli Sauce",
+      "unit": "ml",
+      "basis": "per100",
+      "qty": 1,
+      "expected": {
+        "kcal": 2,
+        "pro": 0,
+        "carb": 0.5,
+        "fat": 0
+      }
+    },
+    {
+      "name": "Sweet Chilli Sauce",
+      "unit": "ml",
+      "basis": "per100",
+      "qty": 2,
+      "expected": {
+        "kcal": 4,
+        "pro": 0,
+        "carb": 1,
+        "fat": 0
+      }
+    },
+    {
+      "name": "Sweet Chilli Sauce",
+      "unit": "ml",
+      "basis": "per100",
+      "qty": 0.5,
+      "expected": {
+        "kcal": 1,
+        "pro": 0,
+        "carb": 0.2,
+        "fat": 0
+      }
+    },
+    {
+      "name": "Sweet Chilli Sauce",
+      "unit": "ml",
+      "basis": "per100",
+      "qty": 30,
+      "expected": {
+        "kcal": 62,
+        "pro": 0.2,
+        "carb": 14.4,
+        "fat": 0.2
+      }
+    },
+    {
+      "name": "Sweet Chilli Sauce",
+      "unit": "ml",
+      "basis": "per100",
+      "qty": 100,
+      "expected": {
+        "kcal": 208,
+        "pro": 0.7,
+        "carb": 48,
+        "fat": 0.7
+      }
+    },
+    {
+      "name": "Sweet Chilli Sauce",
+      "unit": "ml",
+      "basis": "per100",
+      "qty": 150,
+      "expected": {
+        "kcal": 312,
+        "pro": 1,
+        "carb": 72,
+        "fat": 1
+      }
+    },
+    {
+      "name": "Sweet Chilli Sauce",
+      "unit": "ml",
+      "basis": "per100",
+      "qty": 250,
+      "expected": {
+        "kcal": 520,
+        "pro": 1.8,
+        "carb": 120,
+        "fat": 1.8
+      }
+    },
+    {
+      "name": "Nola Mayonnaise",
+      "unit": "g",
+      "basis": "per100",
+      "qty": 1,
+      "expected": {
+        "kcal": 1,
+        "pro": 0,
+        "carb": 0,
+        "fat": 0.1
+      }
+    },
+    {
+      "name": "Nola Mayonnaise",
+      "unit": "g",
+      "basis": "per100",
+      "qty": 2,
+      "expected": {
+        "kcal": 1,
+        "pro": 0,
+        "carb": 0,
+        "fat": 0.2
+      }
+    },
+    {
+      "name": "Nola Mayonnaise",
+      "unit": "g",
+      "basis": "per100",
+      "qty": 0.5,
+      "expected": {
+        "kcal": 0,
+        "pro": 0,
+        "carb": 0,
+        "fat": 0
+      }
+    },
+    {
+      "name": "Nola Mayonnaise",
+      "unit": "g",
+      "basis": "per100",
+      "qty": 30,
+      "expected": {
+        "kcal": 21,
+        "pro": 0,
+        "carb": 0.3,
+        "fat": 2.4
+      }
+    },
+    {
+      "name": "Nola Mayonnaise",
+      "unit": "g",
+      "basis": "per100",
+      "qty": 100,
+      "expected": {
+        "kcal": 71,
+        "pro": 0.1,
+        "carb": 1,
+        "fat": 7.9
+      }
+    },
+    {
+      "name": "Nola Mayonnaise",
+      "unit": "g",
+      "basis": "per100",
+      "qty": 150,
+      "expected": {
+        "kcal": 107,
+        "pro": 0.2,
+        "carb": 1.5,
+        "fat": 11.9
+      }
+    },
+    {
+      "name": "Nola Mayonnaise",
+      "unit": "g",
+      "basis": "per100",
+      "qty": 250,
+      "expected": {
+        "kcal": 178,
+        "pro": 0.3,
+        "carb": 2.5,
+        "fat": 19.8
+      }
+    },
+    {
+      "name": "Spar Seeded Burger Roll",
+      "unit": "roll",
+      "basis": "perUnit",
+      "qty": 1,
+      "expected": {
+        "kcal": 176,
+        "pro": 4.2,
+        "carb": 34.6,
+        "fat": 2.4
+      }
+    },
+    {
+      "name": "Spar Seeded Burger Roll",
+      "unit": "roll",
+      "basis": "perUnit",
+      "qty": 2,
+      "expected": {
+        "kcal": 352,
+        "pro": 8.4,
+        "carb": 69.1,
+        "fat": 4.9
+      }
+    },
+    {
+      "name": "Spar Seeded Burger Roll",
+      "unit": "roll",
+      "basis": "perUnit",
+      "qty": 0.5,
+      "expected": {
+        "kcal": 88,
+        "pro": 2.1,
+        "carb": 17.3,
+        "fat": 1.2
+      }
+    },
+    {
+      "name": "Spar Seeded Burger Roll",
+      "unit": "roll",
+      "basis": "perUnit",
+      "qty": 30,
+      "expected": {
+        "kcal": 5280,
+        "pro": 126,
+        "carb": 1036.8,
+        "fat": 72.9
+      }
+    },
+    {
+      "name": "Spar Seeded Burger Roll",
+      "unit": "roll",
+      "basis": "perUnit",
+      "qty": 100,
+      "expected": {
+        "kcal": 17600,
+        "pro": 420,
+        "carb": 3456,
+        "fat": 243
+      }
+    },
+    {
+      "name": "Spar Seeded Burger Roll",
+      "unit": "roll",
+      "basis": "perUnit",
+      "qty": 150,
+      "expected": {
+        "kcal": 26400,
+        "pro": 630,
+        "carb": 5184,
+        "fat": 364.5
+      }
+    },
+    {
+      "name": "Spar Seeded Burger Roll",
+      "unit": "roll",
+      "basis": "perUnit",
+      "qty": 250,
+      "expected": {
+        "kcal": 44000,
+        "pro": 1050,
+        "carb": 8640,
+        "fat": 607.5
+      }
+    },
+    {
+      "name": "Bokomo Weet bix",
+      "unit": "biscuit",
+      "basis": "perUnit",
+      "qty": 1,
+      "expected": {
+        "kcal": 136,
+        "pro": 3.9,
+        "carb": 25.8,
+        "fat": 0.8
+      }
+    },
+    {
+      "name": "Bokomo Weet bix",
+      "unit": "biscuit",
+      "basis": "perUnit",
+      "qty": 2,
+      "expected": {
+        "kcal": 273,
+        "pro": 7.8,
+        "carb": 51.6,
+        "fat": 1.6
+      }
+    },
+    {
+      "name": "Bokomo Weet bix",
+      "unit": "biscuit",
+      "basis": "perUnit",
+      "qty": 0.5,
+      "expected": {
+        "kcal": 68,
+        "pro": 1.9,
+        "carb": 12.9,
+        "fat": 0.4
+      }
+    },
+    {
+      "name": "Bokomo Weet bix",
+      "unit": "biscuit",
+      "basis": "perUnit",
+      "qty": 30,
+      "expected": {
+        "kcal": 4089,
+        "pro": 117,
+        "carb": 774,
+        "fat": 24
+      }
+    },
+    {
+      "name": "Bokomo Weet bix",
+      "unit": "biscuit",
+      "basis": "perUnit",
+      "qty": 100,
+      "expected": {
+        "kcal": 13630,
+        "pro": 390,
+        "carb": 2580,
+        "fat": 80
+      }
+    },
+    {
+      "name": "Bokomo Weet bix",
+      "unit": "biscuit",
+      "basis": "perUnit",
+      "qty": 150,
+      "expected": {
+        "kcal": 20445,
+        "pro": 585,
+        "carb": 3870,
+        "fat": 120
+      }
+    },
+    {
+      "name": "Bokomo Weet bix",
+      "unit": "biscuit",
+      "basis": "perUnit",
+      "qty": 250,
+      "expected": {
+        "kcal": 34075,
+        "pro": 975,
+        "carb": 6450,
+        "fat": 200
+      }
+    },
+    {
+      "name": "The Gourmet Greek Low Fat Strained Greek Yoghurt",
+      "unit": "g",
+      "basis": "per100",
+      "qty": 1,
+      "expected": {
+        "kcal": 1,
+        "pro": 0.1,
+        "carb": 0,
+        "fat": 0
+      }
+    },
+    {
+      "name": "The Gourmet Greek Low Fat Strained Greek Yoghurt",
+      "unit": "g",
+      "basis": "per100",
+      "qty": 2,
+      "expected": {
+        "kcal": 1,
+        "pro": 0.2,
+        "carb": 0,
+        "fat": 0
+      }
+    },
+    {
+      "name": "The Gourmet Greek Low Fat Strained Greek Yoghurt",
+      "unit": "g",
+      "basis": "per100",
+      "qty": 0.5,
+      "expected": {
+        "kcal": 0,
+        "pro": 0,
+        "carb": 0,
+        "fat": 0
+      }
+    },
+    {
+      "name": "The Gourmet Greek Low Fat Strained Greek Yoghurt",
+      "unit": "g",
+      "basis": "per100",
+      "qty": 30,
+      "expected": {
+        "kcal": 16,
+        "pro": 2.9,
+        "carb": 0.6,
+        "fat": 0.2
+      }
+    },
+    {
+      "name": "The Gourmet Greek Low Fat Strained Greek Yoghurt",
+      "unit": "g",
+      "basis": "per100",
+      "qty": 100,
+      "expected": {
+        "kcal": 53,
+        "pro": 9.5,
+        "carb": 2,
+        "fat": 0.7
+      }
+    },
+    {
+      "name": "The Gourmet Greek Low Fat Strained Greek Yoghurt",
+      "unit": "g",
+      "basis": "per100",
+      "qty": 150,
+      "expected": {
+        "kcal": 79,
+        "pro": 14.3,
+        "carb": 3,
+        "fat": 1.1
+      }
+    },
+    {
+      "name": "The Gourmet Greek Low Fat Strained Greek Yoghurt",
+      "unit": "g",
+      "basis": "per100",
+      "qty": 250,
+      "expected": {
+        "kcal": 132,
+        "pro": 23.8,
+        "carb": 5,
+        "fat": 1.8
+      }
+    },
+    {
+      "name": "Bakers Classic Choc-Kits",
+      "unit": "2 biscuits",
+      "basis": "perUnit",
+      "qty": 1,
+      "expected": {
+        "kcal": 124,
+        "pro": 1.6,
+        "carb": 0,
+        "fat": 5.9
+      }
+    },
+    {
+      "name": "Bakers Classic Choc-Kits",
+      "unit": "2 biscuits",
+      "basis": "perUnit",
+      "qty": 2,
+      "expected": {
+        "kcal": 248,
+        "pro": 3.2,
+        "carb": 0,
+        "fat": 11.8
+      }
+    },
+    {
+      "name": "Bakers Classic Choc-Kits",
+      "unit": "2 biscuits",
+      "basis": "perUnit",
+      "qty": 0.5,
+      "expected": {
+        "kcal": 62,
+        "pro": 0.8,
+        "carb": 0,
+        "fat": 3
+      }
+    },
+    {
+      "name": "Bakers Classic Choc-Kits",
+      "unit": "2 biscuits",
+      "basis": "perUnit",
+      "qty": 30,
+      "expected": {
+        "kcal": 3720,
+        "pro": 48,
+        "carb": 0,
+        "fat": 177
+      }
+    },
+    {
+      "name": "Bakers Classic Choc-Kits",
+      "unit": "2 biscuits",
+      "basis": "perUnit",
+      "qty": 100,
+      "expected": {
+        "kcal": 12400,
+        "pro": 160,
+        "carb": 0,
+        "fat": 590
+      }
+    },
+    {
+      "name": "Bakers Classic Choc-Kits",
+      "unit": "2 biscuits",
+      "basis": "perUnit",
+      "qty": 150,
+      "expected": {
+        "kcal": 18600,
+        "pro": 240,
+        "carb": 0,
+        "fat": 885
+      }
+    },
+    {
+      "name": "Bakers Classic Choc-Kits",
+      "unit": "2 biscuits",
+      "basis": "perUnit",
+      "qty": 250,
+      "expected": {
+        "kcal": 31000,
+        "pro": 400,
+        "carb": 0,
+        "fat": 1475
+      }
+    },
+    {
+      "name": "Deluxe Greek 60% strained Greek yoghurt",
+      "unit": "ml",
+      "basis": "per100",
+      "qty": 1,
+      "expected": {
+        "kcal": 2,
+        "pro": 0.1,
+        "carb": 0,
+        "fat": 0.1
+      }
+    },
+    {
+      "name": "Deluxe Greek 60% strained Greek yoghurt",
+      "unit": "ml",
+      "basis": "per100",
+      "qty": 2,
+      "expected": {
+        "kcal": 3,
+        "pro": 0.2,
+        "carb": 0.1,
+        "fat": 0.3
+      }
+    },
+    {
+      "name": "Deluxe Greek 60% strained Greek yoghurt",
+      "unit": "ml",
+      "basis": "per100",
+      "qty": 0.5,
+      "expected": {
+        "kcal": 1,
+        "pro": 0.1,
+        "carb": 0,
+        "fat": 0.1
+      }
+    },
+    {
+      "name": "Deluxe Greek 60% strained Greek yoghurt",
+      "unit": "ml",
+      "basis": "per100",
+      "qty": 30,
+      "expected": {
+        "kcal": 46,
+        "pro": 3.3,
+        "carb": 1.2,
+        "fat": 3.9
+      }
+    },
+    {
+      "name": "Deluxe Greek 60% strained Greek yoghurt",
+      "unit": "ml",
+      "basis": "per100",
+      "qty": 100,
+      "expected": {
+        "kcal": 152,
+        "pro": 11,
+        "carb": 4,
+        "fat": 13
+      }
+    },
+    {
+      "name": "Deluxe Greek 60% strained Greek yoghurt",
+      "unit": "ml",
+      "basis": "per100",
+      "qty": 150,
+      "expected": {
+        "kcal": 228,
+        "pro": 16.5,
+        "carb": 6,
+        "fat": 19.5
+      }
+    },
+    {
+      "name": "Deluxe Greek 60% strained Greek yoghurt",
+      "unit": "ml",
+      "basis": "per100",
+      "qty": 250,
+      "expected": {
+        "kcal": 380,
+        "pro": 27.5,
+        "carb": 10,
+        "fat": 32.5
+      }
+    },
+    {
+      "name": "Albany SUPERIOR BROWN BREAD",
+      "unit": "2 slices",
+      "basis": "perUnit",
+      "qty": 1,
+      "expected": {
+        "kcal": 179,
+        "pro": 6.6,
+        "carb": 34,
+        "fat": 1.5
+      }
+    },
+    {
+      "name": "Albany SUPERIOR BROWN BREAD",
+      "unit": "2 slices",
+      "basis": "perUnit",
+      "qty": 2,
+      "expected": {
+        "kcal": 358,
+        "pro": 13.2,
+        "carb": 68,
+        "fat": 3
+      }
+    },
+    {
+      "name": "Albany SUPERIOR BROWN BREAD",
+      "unit": "2 slices",
+      "basis": "perUnit",
+      "qty": 0.5,
+      "expected": {
+        "kcal": 90,
+        "pro": 3.3,
+        "carb": 17,
+        "fat": 0.8
+      }
+    },
+    {
+      "name": "Albany SUPERIOR BROWN BREAD",
+      "unit": "2 slices",
+      "basis": "perUnit",
+      "qty": 30,
+      "expected": {
+        "kcal": 5370,
+        "pro": 198,
+        "carb": 1020,
+        "fat": 45
+      }
+    },
+    {
+      "name": "Albany SUPERIOR BROWN BREAD",
+      "unit": "2 slices",
+      "basis": "perUnit",
+      "qty": 100,
+      "expected": {
+        "kcal": 17900,
+        "pro": 660,
+        "carb": 3400,
+        "fat": 150
+      }
+    },
+    {
+      "name": "Albany SUPERIOR BROWN BREAD",
+      "unit": "2 slices",
+      "basis": "perUnit",
+      "qty": 150,
+      "expected": {
+        "kcal": 26850,
+        "pro": 990,
+        "carb": 5100,
+        "fat": 225
+      }
+    },
+    {
+      "name": "Albany SUPERIOR BROWN BREAD",
+      "unit": "2 slices",
+      "basis": "perUnit",
+      "qty": 250,
+      "expected": {
+        "kcal": 44750,
+        "pro": 1650,
+        "carb": 8500,
+        "fat": 375
+      }
+    },
+    {
+      "name": "Fry’s Play based chicken popcorn",
+      "unit": "pops",
+      "basis": "perUnit",
+      "qty": 1,
+      "expected": {
+        "kcal": 30,
+        "pro": 2,
+        "carb": 1.7,
+        "fat": 1.4
+      }
+    },
+    {
+      "name": "Fry’s Play based chicken popcorn",
+      "unit": "pops",
+      "basis": "perUnit",
+      "qty": 2,
+      "expected": {
+        "kcal": 59,
+        "pro": 4,
+        "carb": 3.4,
+        "fat": 2.8
+      }
+    },
+    {
+      "name": "Fry’s Play based chicken popcorn",
+      "unit": "pops",
+      "basis": "perUnit",
+      "qty": 0.5,
+      "expected": {
+        "kcal": 15,
+        "pro": 1,
+        "carb": 0.8,
+        "fat": 0.7
+      }
+    },
+    {
+      "name": "Fry’s Play based chicken popcorn",
+      "unit": "pops",
+      "basis": "perUnit",
+      "qty": 30,
+      "expected": {
+        "kcal": 885,
+        "pro": 60,
+        "carb": 51,
+        "fat": 42
+      }
+    },
+    {
+      "name": "Fry’s Play based chicken popcorn",
+      "unit": "pops",
+      "basis": "perUnit",
+      "qty": 100,
+      "expected": {
+        "kcal": 2950,
+        "pro": 200,
+        "carb": 170,
+        "fat": 140
+      }
+    },
+    {
+      "name": "Fry’s Play based chicken popcorn",
+      "unit": "pops",
+      "basis": "perUnit",
+      "qty": 150,
+      "expected": {
+        "kcal": 4425,
+        "pro": 300,
+        "carb": 255,
+        "fat": 210
+      }
+    },
+    {
+      "name": "Fry’s Play based chicken popcorn",
+      "unit": "pops",
+      "basis": "perUnit",
+      "qty": 250,
+      "expected": {
+        "kcal": 7375,
+        "pro": 500,
+        "carb": 425,
+        "fat": 350
+      }
+    }
+  ]
+}

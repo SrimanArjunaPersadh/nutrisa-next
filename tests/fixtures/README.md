@@ -33,10 +33,32 @@ Missing dates mean no weigh-in occurred — the series is genuinely sparse, not
 truncated. The trend feeds the last known value forward across gaps (the old app's
 behaviour); the 24 Jul row tests exactly this. Do not "fill in" missing dates.
 
-## Still needed (deferred, not blocking the trend oracle)
+## meal_logs.json · custom_meals.json · custom_foods.json
 
-- `custom_meals.json` — a handful spanning `unitType` values (`g`, `ml`, `slice`,
-  `piece`, one volume) to oracle `macrosForQuantity`.
-- `meal_logs` one real day — to oracle a day's macro roll-up.
-Export these from Supabase the same way; apply no offset (meal macros aren't personal
-health data the way bodyweight is, but strip `id`/`created_at` as noise).
+Added in Phase 2. Real rows pulled from the live DB (project `ajajsaquxmimsdxbueqb`)
+on 2026-07-31. **These close the gap Phase 1 left open** — `macrosForQuantity` is now
+oracled against STORED rows, not only `FOOD_DB` literals.
+
+**No offset, unlike `weight_logs.json`.** Macros cannot be shifted the way bodyweight
+can: an offset would destroy the `qty × perUnit` relationships that are the thing under
+test. So every macro is **verbatim**. What is scrubbed is row `id`s, replaced with
+synthetic sequential UUIDs. Dates and product names are real — a product name is not
+personal information in the way bodyweight is.
+
+**`expected` is an INDEPENDENT transcription.** Each fixture's `expected` values were
+produced by transcribing the old app's mapping code (`old-index.html` 1895–1905,
+1935–1946, 1959–1969, and `foodMacros` 900–919) in a generator script, *not* by calling
+`lib/data`. Two separate transcriptions of the same source must agree — that is what
+makes these an oracle rather than the mapper marking its own homework.
+
+Three things in this data are load-bearing and must not be "tidied":
+
+- **`meal_logs` 2026-06-03 has `sort_order` `[3,3,3,4,8]`** — duplicates *and* a gap.
+  Real: a delete never renumbers, so the next insert reuses a length. `sort_order` is
+  also **1-based**, not 0-based (PHASE-2-DECISIONS §5).
+- **The two ingredient columns disagree.** `meal_logs.ings_json` is a JSON *string*
+  with bare `qty` (`"80"`); `custom_meals.ingredients` is *jsonb*, already parsed, with
+  a unit-suffixed `qty` (`"80g"`). Both are strings. This is the sharpest mapping
+  hazard in the phase.
+- **`custom_foods` units include `"2 biscuits"` and `"pops"`** — live proof that
+  `unitType` had to be typed open (PHASE-1-DECISIONS §6).

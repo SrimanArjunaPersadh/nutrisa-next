@@ -17,6 +17,13 @@ Legend: `[ ]` not done · `[x]` verified on phone · `[-]` not applicable
 | Add-food: OCR photo | [ ] | [ ] | [ ] | [ ] |
 | Add-food: manual entry | [ ] | [ ] | [ ] | [ ] |
 
+No rows change in Phase 2 — the data layer ships no surface. What it ships is the
+raw material for the **Error** column: every read and write returns a typed `Result`
+whose `error.kind` is one of `network` / `conflict` / `not-found` / `unknown`, with the
+real message preserved. That is what lets an Error state say what happened and what to
+do (§4.4) instead of apologising vaguely. Nothing in the layer fails silently, and
+nothing queues a failed write locally (§0.3).
+
 Notes on specific cells:
 - **OCR / barcode Loading**: a live "transcribing label…" / "scanning…" indicator is
   correct here — a 3–8s silent wait reads as broken.

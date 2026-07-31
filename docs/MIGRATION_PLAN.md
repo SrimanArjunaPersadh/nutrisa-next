@@ -20,6 +20,8 @@
 
 | Version | Date | Author | Change |
 |---|---|---|---|
+| v1.4 | 2026-07-31 | Owner + Claude Code | Phase 2 `/review` amendment, no scope change: §9.2's `CLAUDE.md` length target corrected from ~60 to ~130 lines. The original number predated every phase; §9.2's own seven mandated content areas plus the Phase 1 engine and Phase 2 data-layer decision blocks cannot fit in 60. Ruled at `/review`, Phase 2 |
+| v1.3 | 2026-07-31 | Owner + Claude Code | Phase 2 amendment, no scope change: the table list was WRONG in three places (§2 Data row, §8, §10 Phase 2). The old app reads and writes **five** existing tables, not four — `custom_foods` was omitted, despite being selected at `old-index.html:1871`, mapped at 1958–1979, upserted by `cloudSaveCustomFood` (2108), deleted at 2155, and named as the destination shape by §7's add-food flow. Corrected everywhere to five. This is a documentation fix, not a schema change: the table already exists and already holds rows. Full reasoning and all Phase 2 rulings in `docs/PHASE-2-DECISIONS.md` |
 | v1.0 | 2026-07-31 | Owner + Claude | Initial plan |
 | v1.2 | 2026-07-31 | Owner + Claude Code | Phase 1 amendment, no scope change: §6's `trendWeight` formula corrected to the OLD APP's actual algorithm (2 dp rounded every step, fed forward) — the v1.1 line stated a clean formula the app has never run. Ruled by the correctness oracle. Full reasoning and all Phase 1 rulings in `docs/PHASE-1-DECISIONS.md` |
 | v1.1 | 2026-07-31 | Owner + Claude | Defect fixes only, no scope change: (1) all dead "§12" cross-references corrected to §11 (deferred log); (2) §5 "Five surfaces" corrected to four; (3) Coach-migration-first precondition made explicit in §0.1 (was silently assumed by §2's "reuse the muscle memory" rationale); (4) `CLAUDE.md` / `plan.md` / `STATUS.md` contents now specified in §9.2, seeded in Phase 0, and §4.4's matrix reference repointed accordingly |
@@ -107,7 +109,7 @@ Instructions — this section does not invent taste, it inherits it.
 | Repo | **New GitHub repo** (e.g. `nutrisa-next`), new Vercel project | `create-next-app` owns root and collides with existing `index.html`; side-by-side cutover needs two real deployments |
 | Hosting | Vercel, new project, env vars re-added once | Same as Coach migration |
 | API | Next.js Route Handlers translating existing serverless functions 1:1 (§8) | Only module syntax changes; semantics identical |
-| Data | **SAME Supabase project. ZERO schema changes.** Tables: `weight_logs`, `meal_logs`, `custom_meals`, `water_logs` | Locked 2026-07-31. Both apps read the same DB live during cutover. Old app's stored numbers are the correctness oracle (§0.1, §6) |
+| Data | **SAME Supabase project. ZERO schema changes.** Tables: `weight_logs`, `meal_logs`, `custom_meals`, `water_logs`, `custom_foods` | Locked 2026-07-31. **Five tables — corrected v1.3**, `custom_foods` was omitted in error. Both apps read the same DB live during cutover. Old app's stored numbers are the correctness oracle (§0.1, §6) |
 | Auth | None this migration — still single-user, permissive RLS, anon key public by design | Multi-user/RLS/auth is Phase 4 of the product, not this migration. Do NOT tighten RLS here — it is a separate planning pass |
 | Secrets | `ANTHROPIC_API_KEY` server-only (OCR + future coaching). Supabase **anon** key is public by design and may sit in client config; **service_role** key NEVER reaches the client | The anon key being public is fine ONLY because RLS tightening is a known Phase-4 item. Do not add service_role to the frontend under any framing |
 | Old app | Stays live and untouched (`nutri-sa-three.vercel.app` + GitHub Pages backup) until §10 Phase 9 cutover passes | Both front doors keep working through cutover |
@@ -385,9 +387,10 @@ behaviour-identical; only module syntax changes.**
 | `/api/ocr-label` | POST | Receives downscaled JPEG. Vision model (Claude Haiku 4.5, `claude-haiku-4-5-20251001`) forced-tool-use JSON: printed values + units + serving size ONLY. No computed numbers. Per-IP best-effort rate limiter; Anthropic spend cap is the real financial backstop |
 | (future) `/api/coach` | POST | NOT built in this migration. When it lands (post-migration, Phase 2 product work), it EXPLAINS numbers the engine computed — it never calculates |
 
-Data reads/writes go to Supabase directly via the typed client against the SAME tables
-(`weight_logs`, `meal_logs`, `custom_meals`, `water_logs`) — no new CRUD routes needed
-where the old app used the Supabase JS client directly; preserve that pattern.
+Data reads/writes go to Supabase directly via the typed client against the SAME five
+tables (`weight_logs`, `meal_logs`, `custom_meals`, `water_logs`, `custom_foods`) — no
+new CRUD routes needed where the old app used the Supabase JS client directly; preserve
+that pattern. (`custom_foods` added v1.3 — it was omitted in error, not deliberately.)
 
 **Universal handler rules:** `ANTHROPIC_API_KEY` server-only; zero frontend lines
 carry it. Supabase anon key public by design (RLS tightening is Phase 4, not here).
@@ -486,7 +489,12 @@ git status
 Seeded in Phase 0, kept current every phase. These are the anti-improvisation layer:
 if they exist and are accurate, a fresh Claude Code session cannot drift.
 
-**`CLAUDE.md`** — under ~60 lines, conventions only, no narrative:
+**`CLAUDE.md`** — under ~130 lines, conventions only, no narrative. (**Amended v1.4.**
+The original ~60 was written before any phase had run; §9.2 mandates seven content
+areas on its own, and Phases 1 and 2 each added a block of frozen decisions — the
+trend-rounding idiom, the 1-based `sort_order`, the read-mapper rounding — that a
+fresh session would otherwise "clean up". Length is not the point; every line being a
+rule rather than narrative is.) Contents:
 - Stack + repo facts (Next.js App Router, TS strict, Tailwind + shadcn, PWA
   shell-only SW, same Supabase project, PowerShell 5.1 — no `&&`).
 - The §6 arithmetic rule, stated verbatim: *the model never does arithmetic; code
@@ -534,10 +542,10 @@ AND the Coach migration precondition (§0.1) is met.**
       typed functions + Vitest suite. **Verify:** tests green; each function
       reproduces the OLD app's stored values byte-for-byte on real DB rows (the
       correctness oracle). Trend line for the real weight series matches exactly.
-- [ ] **Phase 2 — Supabase data layer.** Typed client against the four existing
+- [ ] **Phase 2 — Supabase data layer.** Typed client against the five existing
       tables, read + write, no schema changes. **Verify:** new app reads existing
-      weight/meal/custom-food/water rows and displays identical numbers to the old
-      app, side by side, same DB.
+      weight/meal/custom-meal/custom-food/water rows and displays identical numbers to
+      the old app, side by side, same DB.
 - [ ] **Phase 3 — Weight tab.** Chart (raw + trend + target + goal), filter, history,
       date picker, back-dated edits. **Verify (phone):** log a weight; it appears in
       both apps; trend recomputes; chart-zoom fix holds (full-history dot colours).

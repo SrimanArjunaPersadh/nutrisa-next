@@ -19,7 +19,8 @@ features. Same Supabase project, ZERO schema changes.
   ported function is WRONG until it reproduces the old app's displayed value
   byte-for-byte on the same real rows. (Plan §6.)
 - **No schema changes.** Tables are `weight_logs`, `meal_logs`, `custom_meals`,
-  `water_logs`. Do not evolve them here. (Plan §2.)
+  `water_logs`, `custom_foods` — FIVE, corrected Plan v1.3. Do not evolve them here.
+  (Plan §2.)
 - **No invented features.** The feature inventory (Plan §3) is closed. Nothing added
   without a dated note.
 - **No RLS tightening / auth / multi-user here.** That is Phase 4 product work, a
@@ -105,6 +106,21 @@ of the LABEL's kcal), `clampLabelMacros`, `macrosForQuantity` (qty×perUnit,
   Server or the device.
 - Shell is **PowerShell 5.1 — no `&&`.** One command per line.
 
+## The data layer — `lib/data/` (Plan §2/§8, built Phase 2)
+Browser-only Supabase client, one shared instance. Reads the FIVE existing tables.
+`client.ts` · `types.ts` · `mappers.ts` · one module per table · `index.ts` barrel.
+Tests in `tests/data/`. Rulings in `docs/PHASE-2-DECISIONS.md`.
+- **Every write returns a typed `Result`, never throws.** `{ok:true,data}` /
+  `{ok:false,error:{kind,message}}`. No silent failure anywhere (§4.4).
+- **Mappers round on READ** — `Math.round(kcal)`, `+parseFloat(x).toFixed(1)` on
+  `pro`/`carb`/`fat`. The DB may hold more precision than the old app ever showed.
+  That rounding feeds day totals, so it is engine-side, not display. Frozen.
+- **Column names ≠ field names.** `per_unit`→`perUnit`, `default_qty`→`defaultQty`,
+  `unit_label`→`unitLabel`, `logged_time`→`time`, `ings_json` (JSON string) →`_ings`
+  (parsed), `id`→`_id`. A wrong mapping is silently wrong macros. Test the mappers.
+- **No localStorage, no merge, no offline queue** (§0.3). Cloud rows only.
+- `sort_order` is a REQUIRED caller parameter (the day's list length), never derived.
+
 ## Current phase
-Phase 1 — deterministic engine + first Vitest tests. See `plan.md`.
-Phase 0 (scaffold, tokens, PWA shell, tab nav, repo-memory files) is merged.
+Phase 2 — Supabase data layer. See `plan.md`.
+Phases 0 (scaffold, tokens, PWA shell, tab nav) and 1 (deterministic engine) are merged.
