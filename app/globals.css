@@ -1,4 +1,6 @@
 @import "tailwindcss";
+/* Enter/exit keyframes used by shadcn's Popover (animate-in, fade-in-0, …). */
+@import "tw-animate-css";
 
 /* ============================================================================
    NutriSA design tokens — Migration Plan §4.
@@ -29,6 +31,41 @@
   --color-protein: #a78bfa;
   --color-carbs: #fcd34d;
   --color-fats: #2dd4bf;
+
+  /* ---- shadcn/ui name mapping (Phase 3, PHASE-3-DECISIONS §7) ----------
+     shadcn components are generated against ITS vocabulary (bg-primary,
+     text-muted-foreground, border-border). Rather than edit every generated
+     file, we point its names at ours. §4's names stay canonical — these are
+     aliases pointing inward, and every value is a var() reference so no hex is
+     re-typed and the one-hex-once rule holds.
+
+     --color-border already exists above and is exactly what shadcn means by
+     `border`, so it is NOT redeclared here.
+
+     Read these as: "when shadcn says primary, it means our blue."           */
+  --color-background: var(--color-bg);
+  --color-foreground: var(--color-text);
+
+  --color-card: var(--color-bg2);
+  --color-card-foreground: var(--color-text);
+  --color-popover: var(--color-bg2);
+  --color-popover-foreground: var(--color-text);
+
+  --color-primary: var(--color-blue);
+  --color-primary-foreground: var(--color-text);
+  --color-secondary: var(--color-bg3);
+  --color-secondary-foreground: var(--color-text);
+
+  --color-muted: var(--color-bg3);
+  --color-muted-foreground: var(--color-text-3);
+  --color-accent: var(--color-bg3);
+  --color-accent-foreground: var(--color-text);
+
+  --color-destructive: var(--color-red);
+  --color-destructive-foreground: var(--color-text);
+
+  --color-input: var(--color-border);
+  --color-ring: var(--color-blue);
 
   /* ---- Typography (§4.2) ----------------------------------------------- */
   /* Font family vars are injected onto <html> by next/font in layout.tsx.  */

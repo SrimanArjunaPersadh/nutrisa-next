@@ -143,6 +143,52 @@ correctly, which is the sanctioned escape hatch in the rule's own wording. Any
 day-cell we hand-render inside it uses `onMouseDown` + `preventDefault()`, never
 `onClick`. Click-outside-to-close, Enter = select, Escape = close, 44px targets.
 
+### 7a. HOW it was installed (2026-08-04) — `init` was NOT run
+
+`npx shadcn init` rewrites the target stylesheet with its own palette block. Ours
+is guarded by `tests/tokens.test.ts` ("every hex exactly once", "the alias block
+contains no hex at all"), and a second palette would defeat the point of §4 even
+where it uses `oklch()` rather than hex.
+
+**So `components.json` was hand-written and only `shadcn add popover calendar` was
+run.** `git diff` confirms it touched no CSS: it created
+`components/ui/{popover,calendar,button}.tsx` and added `radix-ui`,
+`react-day-picker` and `date-fns`. `clsx`, `tailwind-merge`,
+`class-variance-authority` and `tw-animate-css` were added by hand (the generated
+files import `cn`, `cva`, and Popover's enter/exit animation utilities).
+
+The name mapping lives in `@theme` in `globals.css` — `--color-primary:
+var(--color-blue)`, `--color-popover: var(--color-bg2)`, and so on. **Every value
+is a `var()` reference; no hex is re-typed and the token tests still pass.**
+`--color-border` already existed and is exactly what shadcn means by `border`, so
+it is NOT redeclared. Read the block as: *when shadcn says primary, it means our
+blue.*
+
+`lib/utils.ts` (`cn`) is shadcn's by convention — nothing in `lib/engine` or
+`lib/data` should ever import it.
+
+### 7b. Two components, both ported from the old app
+
+- **`components/date-picker.tsx`** ← `renderDatePicker` (2882–2918). Popover +
+  Calendar, Monday-first, today and selection marked, opens on the selected day's
+  month, closes on select. `max` disables future days.
+- **`components/range-picker.tsx`** ← `renderRangePicker` (2937–2979) +
+  `pickRangeDate` (2921–2925). INLINE, not a popover — the old app renders it in
+  the flow of the chart card. **Draft-then-commit is the behaviour that matters:**
+  tapping days edits a draft, and nothing filters the chart until "Set Range". That
+  is why the old app keeps `S.wpick` separate from `S.wfrom`/`S.wto`. Two-tap
+  semantics and the backwards-pick swap (old `lo`/`hi`, 2944–2945) come free from
+  react-day-picker's range mode.
+
+**`lib/date.ts`** holds the calendar-day helpers. It works in LOCAL time while
+`lib/engine` parses UTC — both conventions exist in the old app (`td()` at 484 is
+local; `msFromIsoDate` is UTC). They never disagree because the `YYYY-MM-DD`
+STRING is the interchange format and no `Date` object crosses the boundary. Keep
+it that way.
+
+Both render live on **`/styleguide`** so the dropdown rule can be verified with a
+real thumb rather than argued about.
+
 ## 8. Data fetching — one client hook, manual refetch after write
 
 Phase 3 is the first surface to read Supabase, so this sets the pattern for 4–8.

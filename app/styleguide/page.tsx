@@ -1,6 +1,10 @@
 "use client";
 
-import { useSyncExternalStore } from "react";
+import { useState, useSyncExternalStore } from "react";
+
+import { DatePicker } from "@/components/date-picker";
+import { RangePicker } from "@/components/range-picker";
+import { formatDayShort, todayIso } from "@/lib/date";
 
 /**
  * The token documentation surface (§10 Phase 0).
@@ -112,6 +116,54 @@ function Section({
       {note && <p className="mt-1 text-body text-text-2">{note}</p>}
       <div className="mt-4">{children}</div>
     </section>
+  );
+}
+
+/**
+ * Live pickers, so the dropdown rule can be verified with a real thumb on the
+ * real phone rather than argued about. Both are the components the Weight tab
+ * uses — not mockups of them.
+ */
+function PickerDemo() {
+  const today = todayIso();
+  const [day, setDay] = useState(today);
+  const [range, setRange] = useState({ from: "", to: "" });
+
+  return (
+    <div className="grid gap-4">
+      <div>
+        <Label>Single day — future dates disabled</Label>
+        <div className="mt-2 max-w-xs">
+          <DatePicker value={day} onChange={setDay} max={today} />
+        </div>
+        <p className="mt-2 text-label text-text-3">
+          Selected: <span data-numeric>{formatDayShort(day)}</span>
+        </p>
+      </div>
+
+      <div>
+        <Label>Custom range — draft until “Set Range”</Label>
+        <div className="mt-2 max-w-sm">
+          <RangePicker
+            from={range.from}
+            to={range.to}
+            max={today}
+            onApply={(from, to) => setRange({ from, to })}
+            onReset={() => setRange({ from: "", to: "" })}
+          />
+        </div>
+        <p className="mt-2 text-label text-text-3">
+          Applied:{" "}
+          {range.from && range.to ? (
+            <span data-numeric>
+              {formatDayShort(range.from)} → {formatDayShort(range.to)}
+            </span>
+          ) : (
+            "no range set"
+          )}
+        </p>
+      </div>
+    </div>
   );
 }
 
@@ -369,6 +421,13 @@ export default function StyleguidePage() {
           <div className="h-4 w-1/2 animate-pulse rounded-btn bg-bg3" />
           <div className="h-4 w-1/3 animate-pulse rounded-btn bg-bg3" />
         </div>
+      </Section>
+
+      <Section
+        title="Date pickers"
+        note="shadcn Popover + Calendar, mapped onto our tokens (Phase 3). Test these with a THUMB — selection must survive the tap, and the calendar must close on outside-tap and Escape."
+      >
+        <PickerDemo />
       </Section>
 
       <p className="mt-10 text-label text-text-3">
