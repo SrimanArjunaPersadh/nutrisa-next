@@ -82,6 +82,16 @@ Pure, typed, dependency-free. Nothing here imports React or Supabase. Tests in
 `kJtoKcal` (÷4.184), `perServingToPer100g` + inverse, `atwaterCheck` (4/4/9, 20%
 of the LABEL's kcal), `clampLabelMacros`, `macrosForQuantity` (qty×perUnit,
 `isGramUnit` picks the basis), `trendWeight`, `weeklyRate`, `eta`.
+Phase 3 added `weeklyRateAt`, `weeklyAverages`, `targetLine`.
+- **A filtered view must NEVER re-run the engine on the filtered slice.** Smoothing
+  needs all past data, so the trend, the rate, the target line and the dot colours
+  are all computed from the FULL series and only then sliced to the visible window.
+  `weeklyRate(s)` anchors to the last entry of whatever it is handed — that is why
+  `weeklyRateAt(fullSeries, anchorDate)` exists. Passing a slice is silently wrong
+  arithmetic with no error anywhere. `docs/PHASE-3-DECISIONS.md` §2, §9.
+- **Week bucketing is UTC-only** (`weeklyAverages`). The old app mixed `getDay()`
+  (local) with `toISOString()` (UTC), which agrees with UTC arithmetic at SAST and in
+  CI but breaks at negative offsets. Same numbers, no timezone trap. §9.
 - **`trendWeight` rounds 2dp EVERY step and feeds the rounded value forward**:
   `tw[i]=round(0.1*w[i]+0.9*tw[i-1], 2)`, seed `tw[0]=w[0]` unrounded, via
   `+n.toFixed(2)` (never `Math.round`). This matches the old app, NOT the clean
@@ -122,5 +132,21 @@ Tests in `tests/data/`. Rulings in `docs/PHASE-2-DECISIONS.md`.
 - `sort_order` is a REQUIRED caller parameter (the day's list length), never derived.
 
 ## Current phase
-Phase 2 — Supabase data layer. See `plan.md`.
-Phases 0 (scaffold, tokens, PWA shell, tab nav) and 1 (deterministic engine) are merged.
+Phase 3 — Weight tab. See `plan.md` and `docs/PHASE-3-DECISIONS.md`.
+Phases 0 (scaffold, tokens, PWA shell, tab nav), 1 (deterministic engine) and 2
+(Supabase data layer) are merged. Phase 3 is the FIRST phase that ships a surface,
+so several of its rulings set precedent for Phases 4–8:
+- **Chart.js via npm** (not the old CDN tag). Colours read from the live CSS vars via
+  `getComputedStyle` — no hex in any `.ts`/`.tsx`.
+- **shadcn/ui installs here** (`calendar`, `popover`) — this is the phase that first
+  needs a primitive. Its names map onto our tokens as `var()` refs; §4 names stay
+  canonical. The dropdown rule still governs anything we hand-render inside a Popover.
+- **Data fetching: one client hook, manual refetch after write.** `useWeights()`
+  exposes `state: 'loading' | 'error' | 'empty' | 'ready'` — that union IS the
+  four-states rule, so an unhandled state is a type error. No Server Components (the
+  data layer is browser-only by design), no fetching library, no optimistic updates
+  yet; each NO has a recorded revisit trigger. `docs/PHASE-3-DECISIONS.md` §8.
+- **The chart gains a trend line the old app never had** (Plan §5.3 over the old
+  screen) and **finishes the half-applied zoom fix**: target line and dot colours
+  anchor to the FULL series, not the visible slice. This changes rendered PIXELS but
+  no NUMBER — the tiles, history and trend all still match the old app. §1, §2.
