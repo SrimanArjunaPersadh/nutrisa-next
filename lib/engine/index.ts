@@ -12,12 +12,16 @@ export type { Food, Macros, TrendPoint, UnitType, WeightEntry } from "./types";
 export {
   ASSUMED_RATE_KG_PER_WEEK,
   GOAL_KG,
+  TARGET_RATE_KG_PER_DAY,
   eta,
   sortByDate,
+  targetLine,
   trendWeight,
+  weeklyAverages,
   weeklyRate,
+  weeklyRateAt,
 } from "./trend";
-export type { EtaResult } from "./trend";
+export type { EtaResult, WeeklyAverage } from "./trend";
 
 export {
   ATWATER_TOLERANCE,

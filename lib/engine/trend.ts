@@ -23,6 +23,17 @@ export const GOAL_KG = 88;
  */
 export const ASSUMED_RATE_KG_PER_WEEK = 0.5;
 
+/**
+ * The rate the amber TARGET line descends at, in kg per DAY. Old app:
+ * `const RATET = 0.5 / 7` (line 438) — half a kilo a week, spread daily.
+ *
+ * Distinct from {@link ASSUMED_RATE_KG_PER_WEEK} despite both meaning "0.5 kg/wk":
+ * that one projects a DATE, this one draws a LINE, and the old app kept them as
+ * separate literals. Kept separate here too, so changing one cannot silently move
+ * the other.
+ */
+export const TARGET_RATE_KG_PER_DAY = 0.5 / 7;
+
 /** Smoothing factor. Frozen at 0.1 — the MacroFactor constant. */
 const ALPHA = 0.1;
 
@@ -37,6 +48,11 @@ const MS_PER_DAY = 864e5;
  */
 function round2(n: number): number {
   return +n.toFixed(2);
+}
+
+/** 1 dp, the same `toFixed` way. The old app's weekly averages are `toFixed(1)`. */
+function round1(n: number): number {
+  return +n.toFixed(1);
 }
 
 /**
@@ -126,18 +142,49 @@ export function trendWeight(series: readonly WeightEntry[]): TrendPoint[] {
 export function weeklyRate(series: readonly WeightEntry[]): number | null {
   const ws = sortByDate(series);
   if (ws.length < 2) return null;
+  return weeklyRateAt(ws, ws[ws.length - 1].date);
+}
 
-  const trend = trendWeight(ws);
-  const last = trend[trend.length - 1];
-  const cutoffMs = msFromIsoDate(last.date) - 7 * MS_PER_DAY;
+/**
+ * The weekly rate ANCHORED at a given weigh-in date, computed from the FULL
+ * series. Old app `vW()` lines 2993–3001.
+ *
+ * This exists because the Weight page filters. `weeklyRate` anchors to the last
+ * entry of whatever series it is handed, so a caller showing "March" cannot reach
+ * for it — and must NOT hand it the filtered slice, because `trendWeight` would
+ * then re-seed the EMA from March's first weigh-in instead of carrying months of
+ * smoothing into it. The result would be a plausible, wrong number with no error
+ * anywhere. Pass the full series and say which date you are standing on.
+ *
+ * `series` is the FULL history. `anchorDate` must be a weigh-in date within it;
+ * anything else returns `null` rather than guessing at a neighbour.
+ *
+ * The reference point and the actual-span normalisation are identical to
+ * {@link weeklyRate} — this is that function with the anchor lifted out, not a
+ * second algorithm.
+ *
+ * CALLER GUARD, not enforced here: the old page also blanks the rate when the
+ * FILTERED window holds fewer than two entries, even when the full trend could
+ * answer (2995). That is a statement about the visible window, so it belongs to
+ * the view, not the engine.
+ */
+export function weeklyRateAt(
+  series: readonly WeightEntry[],
+  anchorDate: string,
+): number | null {
+  const trend = trendWeight(series);
 
+  const anchor = trend.find((x) => x.date === anchorDate);
+  if (!anchor) return null;
+
+  const cutoffMs = msFromIsoDate(anchor.date) - 7 * MS_PER_DAY;
   const ref = trend.filter((x) => msFromIsoDate(x.date) <= cutoffMs).pop();
   if (!ref) return null;
 
-  const days = (msFromIsoDate(last.date) - msFromIsoDate(ref.date)) / MS_PER_DAY;
+  const days = (msFromIsoDate(anchor.date) - msFromIsoDate(ref.date)) / MS_PER_DAY;
   if (days === 0) return null;
 
-  return round2(((last.tw - ref.tw) / days) * 7);
+  return round2(((anchor.tw - ref.tw) / days) * 7);
 }
 
 /** What `eta()` can conclude. The caller formats it; the engine never returns a string. */
@@ -183,4 +230,90 @@ export function eta(series: readonly WeightEntry[], today: Date): EtaResult {
   );
   date.setDate(date.getDate() + daysOut);
   return { kind: "projected", date };
+}
+
+/** One Monday-started bucket of weigh-ins. `weekStart` is ISO `YYYY-MM-DD`. */
+export type WeeklyAverage = {
+  /** The Monday the week begins on. The view formats it; the engine dates it. */
+  readonly weekStart: string;
+  /** Mean raw weight for the week, 1 dp. A NUMBER — the old app returned a string. */
+  readonly avg: number;
+  /** How many weigh-ins landed in the bucket. */
+  readonly n: number;
+};
+
+/**
+ * Mean raw weight per ISO (Monday-started) week, oldest week first. Old app
+ * `weeklyAverages()` at 601–618.
+ *
+ * Unlike everything else on the Weight page, this one IS meant to run on the
+ * filtered slice: it averages raw readings, which need no history to be correct.
+ * There is no smoothing here to re-seed.
+ *
+ * Weeks with no weigh-ins are absent, not zero-filled — the old app builds buckets
+ * only from entries it has.
+ *
+ * ORACLE-PRESERVING FIX: the old function mixes `getDay()`/`setDate()` (LOCAL) with
+ * `toISOString()` (UTC) on a date parsed as UTC midnight. That happens to agree at
+ * SAST and under a UTC test runner, but at a negative UTC offset the local read
+ * lands on the previous day and every bucket shifts by one. We do the whole
+ * calculation in UTC. Identical output everywhere the old app has actually run,
+ * minus the trap.
+ */
+export function weeklyAverages(
+  series: readonly WeightEntry[],
+): WeeklyAverage[] {
+  const buckets = new Map<string, number[]>();
+
+  for (const entry of sortByDate(series)) {
+    const ms = msFromIsoDate(entry.date);
+    // getUTCDay: Sunday is 0, and ISO weeks end on Sunday — so it is day 7.
+    const isoDow = new Date(ms).getUTCDay() || 7;
+    const mondayMs = ms - (isoDow - 1) * MS_PER_DAY;
+    const weekStart = new Date(mondayMs).toISOString().slice(0, 10);
+
+    const bucket = buckets.get(weekStart);
+    if (bucket) bucket.push(entry.weight);
+    else buckets.set(weekStart, [entry.weight]);
+  }
+
+  // Insertion order is chronological because the series was sorted first.
+  return [...buckets].map(([weekStart, vals]) => ({
+    weekStart,
+    avg: round1(vals.reduce((a, b) => a + b, 0) / vals.length),
+    n: vals.length,
+  }));
+}
+
+/**
+ * The amber "target −0.5kg/wk" line: where weight WOULD be, descending at
+ * {@link TARGET_RATE_KG_PER_DAY} from the very first weigh-in. Old app `bDS()`
+ * line 3659.
+ *
+ *     target(d) = round(firstWeight − 0.0714… × daysSince(firstDate), 2)
+ *
+ * THE ZOOM FIX (Plan §5.3, PHASE-3-DECISIONS §2). `fullSeries` is the whole
+ * history and `dates` is only the visible window. The old app passed its filtered
+ * slice as both, so `first` re-anchored to whatever was on screen and the amber
+ * line jumped every time the Week/Month/All filter changed. The anchor is a fact
+ * about the journey, not about the current viewport.
+ *
+ * Returns one value per entry in `dates`, in the order given — Chart.js wants a
+ * parallel array. Empty history means no line to draw.
+ */
+export function targetLine(
+  fullSeries: readonly WeightEntry[],
+  dates: readonly string[],
+): number[] {
+  const ws = sortByDate(fullSeries);
+  if (ws.length === 0) return [];
+
+  const firstWeight = ws[0].weight;
+  const firstMs = msFromIsoDate(ws[0].date);
+
+  return dates.map((date) => {
+    // Math.round mirrors the old app: whole days, never a fractional step.
+    const days = Math.round((msFromIsoDate(date) - firstMs) / MS_PER_DAY);
+    return round2(firstWeight - TARGET_RATE_KG_PER_DAY * days);
+  });
 }

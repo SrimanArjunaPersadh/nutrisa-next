@@ -2,9 +2,13 @@ import { describe, expect, it } from "vitest";
 
 import {
   GOAL_KG,
+  TARGET_RATE_KG_PER_DAY,
   eta,
+  targetLine,
   trendWeight,
+  weeklyAverages,
   weeklyRate,
+  weeklyRateAt,
 } from "../../lib/engine/trend";
 import type { WeightEntry } from "../../lib/engine/types";
 import fixture from "../fixtures/weight_logs.json";
@@ -206,6 +210,161 @@ describe("weeklyRate — calendar dates, not array indices", () => {
       { date: "2026-05-15", weight: 90 },
     ];
     expect(weeklyRate(losing)!).toBeLessThan(0);
+  });
+});
+
+describe("weeklyRateAt — the same algorithm, anchored anywhere", () => {
+  const DATES = ROWS.map((r) => r.date);
+
+  it("equals weeklyRate when anchored at the last weigh-in", () => {
+    const last = DATES[DATES.length - 1];
+    expect(weeklyRateAt(SERIES, last)).toBe(weeklyRate(SERIES));
+    expect(weeklyRateAt(SERIES, last)).toBe(0.02);
+  });
+
+  it("carries months of smoothing into a mid-series anchor", () => {
+    // THE POINT OF THIS FUNCTION (PHASE-3-DECISIONS §2, §9). Anchored on 16 Jun,
+    // the reference is 9 Jun — 7 days back — and both trend values come from a
+    // line seeded way back on 5 May.
+    expect(weeklyRateAt(SERIES, "2026-06-16")).toBe(0.02);
+  });
+
+  it("differs from re-running the engine on a filtered slice", () => {
+    // The bug this function exists to make impossible. A "June" view that hands
+    // weeklyRate its own slice re-seeds the EMA at June's first weigh-in and gets
+    // a plausible, wrong number with no error anywhere.
+    const june = SERIES.filter((e) => e.date.startsWith("2026-06"));
+    const correct = weeklyRateAt(SERIES, "2026-06-16");
+    const wrong = weeklyRateAt(june, "2026-06-16");
+
+    expect(correct).toBe(0.02);
+    expect(wrong).not.toBe(correct);
+  });
+
+  it("returns null for a date that is not a weigh-in", () => {
+    // No interpolating to a neighbour: the caller asked about a day we did not
+    // weigh in on, and the honest answer is nothing.
+    expect(weeklyRateAt(SERIES, "2026-06-18")).toBeNull();
+    expect(weeklyRateAt(SERIES, "2026-01-01")).toBeNull();
+  });
+
+  it("returns null when nothing is old enough to reference", () => {
+    // 7 May is the second weigh-in ever; the cutoff lands before the series began.
+    expect(weeklyRateAt(SERIES, "2026-05-07")).toBeNull();
+  });
+
+  it("returns null on an empty series", () => {
+    expect(weeklyRateAt([], "2026-05-05")).toBeNull();
+  });
+});
+
+describe("weeklyAverages — Monday-started buckets", () => {
+  const WEEKS = weeklyAverages(SERIES);
+
+  it("buckets the first week from the Monday BEFORE the first weigh-in", () => {
+    // 5 May 2026 is a Tuesday, so its week starts Mon 4 May and holds the first
+    // four weigh-ins: 91.1, 88.9, 89.8, 90.3.
+    expect(WEEKS[0]).toEqual({ weekStart: "2026-05-04", avg: 90.0, n: 4 });
+  });
+
+  it("starts every bucket on a Monday, in UTC", () => {
+    for (const week of WEEKS) {
+      const dow = new Date(`${week.weekStart}T00:00:00Z`).getUTCDay();
+      expect(dow, `${week.weekStart} is not a Monday`).toBe(1);
+    }
+  });
+
+  it("puts a Sunday in the week that STARTED six days earlier", () => {
+    // The off-by-one every ISO-week implementation gets wrong: getUTCDay() calls
+    // Sunday 0, but ISO calls it day 7 — the END of its week, not the start.
+    expect(weeklyAverages([{ date: "2026-05-10", weight: 90 }])).toEqual([
+      { weekStart: "2026-05-04", avg: 90, n: 1 },
+    ]);
+  });
+
+  it("accounts for every weigh-in exactly once", () => {
+    expect(WEEKS.reduce((sum, w) => sum + w.n, 0)).toBe(ROWS.length);
+  });
+
+  it("omits weeks with no weigh-ins rather than zero-filling them", () => {
+    // The 37-day hole spans five empty weeks. They are absent, not zeroed — a
+    // zero-filled week would drag every average and read as a 0 kg body weight.
+    const starts = WEEKS.map((w) => w.weekStart);
+    expect(starts).toContain("2026-06-15");
+    expect(starts).toContain("2026-07-20");
+    expect(starts).not.toContain("2026-06-22");
+    expect(starts).not.toContain("2026-07-13");
+  });
+
+  it("is ordered oldest week first, whatever order the caller passes", () => {
+    expect(weeklyAverages([...SERIES].reverse())).toEqual(WEEKS);
+  });
+
+  it("returns numbers, not the old app's formatted strings", () => {
+    for (const week of WEEKS) {
+      expect(typeof week.avg).toBe("number");
+    }
+  });
+
+  it("returns an empty list for an empty series", () => {
+    expect(weeklyAverages([])).toEqual([]);
+  });
+});
+
+describe("targetLine — anchored to the journey, not the viewport", () => {
+  const DATES = ROWS.map((r) => r.date);
+
+  it("starts at the first weigh-in and descends 0.5 kg a week", () => {
+    const line = targetLine(SERIES, DATES);
+    expect(line).toHaveLength(ROWS.length);
+    expect(line[0]).toBe(91.1); // day 0 — the anchor itself
+    // 12 May is 7 days on: exactly half a kilo below.
+    expect(line[DATES.indexOf("2026-05-12")]).toBe(90.6);
+  });
+
+  it("keeps its anchor when the caller shows only a slice — THE ZOOM FIX", () => {
+    // Plan §5.3 / PHASE-3-DECISIONS §2. The old app passed its filtered slice as
+    // both arguments, so switching to a June view re-anchored the amber line to
+    // June's first weigh-in (87.3) and the whole line jumped down the chart.
+    const juneDates = DATES.filter((d) => d.startsWith("2026-06"));
+    const june = SERIES.filter((e) => e.date.startsWith("2026-06"));
+
+    const fixed = targetLine(SERIES, juneDates);
+    const oldBehaviour = targetLine(june, juneDates);
+
+    // 1 Jun is 27 days after 5 May: 91.1 − (0.5/7 × 27) = 89.17.
+    expect(fixed[0]).toBe(89.17);
+    expect(oldBehaviour[0]).toBe(87.3);
+    expect(fixed[0]).not.toBe(oldBehaviour[0]);
+  });
+
+  it("gives the same value for a date however the window is sliced", () => {
+    // The property the fix buys: one date, one target value, always.
+    const all = targetLine(SERIES, DATES);
+    const one = targetLine(SERIES, ["2026-06-16"]);
+    expect(one[0]).toBe(all[DATES.indexOf("2026-06-16")]);
+  });
+
+  it("returns one value per requested date, in the order given", () => {
+    // Chart.js reads this as a parallel array, so order is load-bearing.
+    const line = targetLine(SERIES, ["2026-07-24", "2026-05-05"]);
+    expect(line).toHaveLength(2);
+    expect(line[1]).toBe(91.1);
+    expect(line[0]).toBeLessThan(line[1]);
+  });
+
+  it("projects past the last weigh-in without needing a reading there", () => {
+    // 4 Aug 2026 is 91 days out: 91.1 − 6.5 = 84.6.
+    expect(targetLine(SERIES, ["2026-08-04"])[0]).toBe(84.6);
+  });
+
+  it("descends at exactly half a kilo per week", () => {
+    expect(TARGET_RATE_KG_PER_DAY * 7).toBeCloseTo(0.5, 10);
+  });
+
+  it("draws nothing without a history to anchor to", () => {
+    expect(targetLine([], DATES)).toEqual([]);
+    expect(targetLine(SERIES, [])).toEqual([]);
   });
 });
 
