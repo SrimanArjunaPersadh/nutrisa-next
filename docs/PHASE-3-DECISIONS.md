@@ -293,3 +293,35 @@ with a prompt, no tiles showing invented zeros, no chart. No stored row can prod
 the old behaviour (the DB has never been empty), so no oracle value is violated.
 This is why `useWeights` reports `empty` as a state distinct from `ready` with a
 zero-length list (§8a).
+
+## 11. The filter — one divergence, deliberate (2026-08-04)
+
+`lib/weight-filter.ts` ports `fW()` (565–598). Week/Month/All/Custom, all string
+comparisons on `YYYY-MM-DD`, because lexical order IS chronological order for that
+format and day-granularity needs no `Date` at all.
+
+**DIVERGENCE — the Week window.** The old app did
+`d.setDate(d.getDate()-7)` and compared that against `new Date(x.date)`: a LOCAL
+timestamp carrying the current time-of-day, against a UTC-midnight parse. At SAST
+the day exactly seven back is included only when the page is opened before 02:00,
+so **the same data yields a different window depending on the hour**. Ours is seven
+calendar days ending today, always. No stored number changes — this decides which
+rows are DRAWN, not what any of them mean.
+
+**Also dropped:** the old `custom` branch auto-filtered by the range picker's
+currently VIEWED month when no range was set (588–594). Our range picker is
+draft-based and never exposes a view month, so there is nothing to read. No range
+set now means no constraint.
+
+## 12. Layout — single column on a phone, two from `md` (owner, 2026-08-04)
+
+The old page is `g2`/`g4` grids sized for a laptop. Phone-first here: tiles are
+`grid-cols-2 md:grid-cols-4`, and the Log Weight / History pair is stacked below
+`md`. Nothing is hidden at any width — the same content reflows.
+
+## 13. What is NOT yet built
+
+The chart. The card renders the live filter and a placeholder in its place. The
+tiles, history and Weekly Averages below it are already filter-driven, so the
+filter is verifiable now — the chart is the last piece of Phase 3, and it needs
+`weightDirections` from §9.
