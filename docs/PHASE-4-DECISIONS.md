@@ -124,6 +124,26 @@ the search results dropdown, which is the thing not being built. Phase 4 ships n
 custom dropdown. When Phase 5 adds search, that rule is the first thing its
 interview must confront.
 
+### 4a. Found at build time — the old grouping loses meals
+
+`vN()` builds the library list as `CATS.map(cat => meals.filter(m => m.cat ===
+cat))` (2800–2802), where `CATS` is exactly
+`['Breakfast','Lunch','Supper','Pre-Workout']` (447). A saved meal whose `cat` is
+anything else is **silently dropped** — it exists in `custom_meals`, it is counted
+nowhere, and no screen can reach it. `rowToCustomMeal` maps a null `cat` to `""`
+(`mappers.ts:166`), so the database can produce exactly such a row, and Phase 5's
+meal builder will be able to create one.
+
+All four fixture meals carry a real category, which is precisely why this would go
+unnoticed until the day it did not.
+
+**Ruling: group by `CATS` in the old app's order, then collect anything left over
+under an `Uncategorised` heading.** `lib/meal-categories.ts`, tested. Empty
+categories are still omitted, matching `if (!meals.length) return ''` (2802).
+
+This changes no number and no stored value; it makes a previously unreachable row
+reachable. An ugly heading beats an invisible meal.
+
 ## 5. Drag-drop is dropped. It never worked on a phone.
 
 **Found:** the old library cards are `draggable="true"` with `ondragstart` /

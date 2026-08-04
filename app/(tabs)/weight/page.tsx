@@ -18,7 +18,7 @@ import { RangePicker } from "@/components/range-picker";
 import { UndoToast, type ToastMessage } from "@/components/undo-toast";
 import { HistoryCard } from "@/components/weight/history-card";
 import { LogWeightCard } from "@/components/weight/log-weight-card";
-import { StatTile, type TileTone } from "@/components/weight/stat-tile";
+import { StatTile, type TileTone } from "@/components/stat-tile";
 import { WeightChart } from "@/components/weight/weight-chart";
 import { WeightFilterTabs } from "@/components/weight/weight-filter-tabs";
 import { formatDayCompact, formatDayShort, toIsoDay, todayIso } from "@/lib/date";
