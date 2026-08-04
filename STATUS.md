@@ -11,7 +11,7 @@ Legend: `[ ]` not done · `[x]` verified on phone · `[-]` not applicable
 |---------|-------|---------|-------|-------|
 | Dashboard | [ ] | [ ] | [ ] | [ ] |
 | Nutrition | [ ] | [ ] | [ ] | [ ] |
-| Weight | [ ] | [ ] | [ ] | [ ] |
+| Weight | [x] | [x] | [x] | [x] |
 | Library / Meal Builder | [ ] | [ ] | [ ] | [ ] |
 | Add-food: barcode scan | [ ] | [ ] | [ ] | [ ] |
 | Add-food: OCR photo | [ ] | [ ] | [ ] | [ ] |

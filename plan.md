@@ -10,7 +10,7 @@ previous one is merged.
 | [x] | 0 — New repo, scaffold, tokens, PWA shell, tab nav, repo-memory files | `phase-0-scaffold` | 2026-07-31 |
 | [x] | 1 — Deterministic engine + first Vitest tests (correctness oracle) | `phase-1-engine` | 2026-07-31 |
 | [x] | 2 — Supabase data layer (typed client, 5 existing tables, no schema change) | `phase-2-data` | 2026-07-31 |
-| [ ] | 3 — Weight tab (chart + trend + target + goal, filter, history, date picker) | `phase-3-weight` | |
+| [x] | 3 — Weight tab (chart + trend + target + goal, filter, history, date picker) | `phase-3-weight` | 2026-08-05 |
 | [ ] | 4 — Nutrition tab (macro tiles, logged meals, water, copy-yesterday) | `phase-4-nutrition` | |
 | [ ] | 5 — Library / Meal Builder (search, gram editor, unitType, save meals) | `phase-5-library` | |
 | [ ] | 6 — Add-food: barcode + Open Food Facts | `phase-6-barcode` | |
