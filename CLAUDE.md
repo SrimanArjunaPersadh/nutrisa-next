@@ -131,22 +131,41 @@ Tests in `tests/data/`. Rulings in `docs/PHASE-2-DECISIONS.md`.
 - **No localStorage, no merge, no offline queue** (§0.3). Cloud rows only.
 - `sort_order` is a REQUIRED caller parameter (the day's list length), never derived.
 
-## Current phase
-Phase 3 — Weight tab. See `plan.md` and `docs/PHASE-3-DECISIONS.md`.
-Phases 0 (scaffold, tokens, PWA shell, tab nav), 1 (deterministic engine) and 2
-(Supabase data layer) are merged. Phase 3 is the FIRST phase that ships a surface,
-so several of its rulings set precedent for Phases 4–8:
+## Precedents set in Phase 3 — they govern every surface after it
+Phase 3 (Weight) was the FIRST phase to ship a surface. `docs/PHASE-3-DECISIONS.md`.
 - **Chart.js via npm** (not the old CDN tag). Colours read from the live CSS vars via
   `getComputedStyle` — no hex in any `.ts`/`.tsx`.
-- **shadcn/ui installs here** (`calendar`, `popover`) — this is the phase that first
-  needs a primitive. Its names map onto our tokens as `var()` refs; §4 names stay
-  canonical. The dropdown rule still governs anything we hand-render inside a Popover.
-- **Data fetching: one client hook, manual refetch after write.** `useWeights()`
-  exposes `state: 'loading' | 'error' | 'empty' | 'ready'` — that union IS the
-  four-states rule, so an unhandled state is a type error. No Server Components (the
-  data layer is browser-only by design), no fetching library, no optimistic updates
-  yet; each NO has a recorded revisit trigger. `docs/PHASE-3-DECISIONS.md` §8.
-- **The chart gains a trend line the old app never had** (Plan §5.3 over the old
-  screen) and **finishes the half-applied zoom fix**: target line and dot colours
-  anchor to the FULL series, not the visible slice. This changes rendered PIXELS but
-  no NUMBER — the tiles, history and trend all still match the old app. §1, §2.
+- **shadcn/ui installed here** (`calendar`, `popover`). Its names map onto our tokens
+  as `var()` refs; §4 names stay canonical. The dropdown rule still governs anything
+  we hand-render inside a Popover.
+- **Data fetching: one client hook per surface, manual refetch after write.**
+  `useWeights()` exposes `state: 'loading' | 'error' | 'empty' | 'ready'` — that union
+  IS the four-states rule, so an unhandled state is a type error. The hook owns the
+  writes too (§8a). A failed WRITE never moves the list into its error state; a failed
+  READ keeps the last good rows under a visible error. Out-of-order responses are
+  discarded by sequence number. No Server Components, no fetching library, no
+  optimistic updates yet; each NO has a recorded revisit trigger. §8.
+- **Destructive actions get an Undo toast, never a confirm** (§6). Phone-first: a
+  confirm taxes every delete to guard against a rare fat-finger.
+- **Where Plan §5 and the old screen disagree, the Plan wins** — with a dated note.
+  The chart gained a trend line the old app never had and finished the half-applied
+  zoom fix. That changed rendered PIXELS but no NUMBER. §1, §2.
+
+## Current phase
+Phase 4 — Nutrition tab. See `plan.md` and `docs/PHASE-4-DECISIONS.md`.
+Phases 0–3 are merged. Rulings that bind this phase:
+- **The water tracker is CUT** (§1) — not deferred. The old app's water UI was
+  unreachable dead code (`adjustWater` has zero call sites), so there is no oracle to
+  translate. This AMENDS the closed feature inventory (Plan §3, §5.2). `water_logs`
+  is untouched and `lib/data/water.ts` stays as unused-but-tested code.
+- **Macro tiles show REMAINING, counting down to the ceiling** (`KCAL_MAX` etc.), not
+  the old app's consumed figure — Plan §5.2 over the old screen. Over the ceiling
+  reads as "140 over", never a negative. The bars below still show consumed. §2.
+- **Drag-drop is NOT ported** (§5). It was HTML5 DnD, which never fired on touch, so
+  tap-to-log is the only path. This amends §5.2's "drag-drop is PRESERVED".
+- **No search in Phase 4** (§4) — the Saved Meals list ships grouped by category with
+  a `+`. Search, Quick Log and the gram editor are Phase 5, which is where the
+  dropdown rule first gets exercised.
+- **`lib/engine/day.ts`** holds `dayTotals` (ports `tot()` rounding exactly),
+  the target constants, `remaining` and `macroStatus`. The engine returns
+  `'over' | 'in-range' | 'under'`, never a colour. §7.
