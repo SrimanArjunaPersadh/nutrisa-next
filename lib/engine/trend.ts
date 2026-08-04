@@ -286,6 +286,52 @@ export function weeklyAverages(
 }
 
 /**
+ * Which way a weigh-in moved against the one before it. Drives the per-point dot
+ * colours: `down` is green, `up` is red, `first`/`flat` are blue (§1.5 — colour
+ * is meaning). The old app collapsed `first` and `flat` into one branch; they are
+ * separate here because they mean different things, and the view maps both to
+ * blue.
+ */
+export type WeightDirection = "first" | "down" | "up" | "flat";
+
+/**
+ * The direction of each visible weigh-in, compared against its TRUE predecessor
+ * in the full history. Old app `bDS()` line 3660.
+ *
+ * THE OTHER HALF OF THE ZOOM FIX (PHASE-3-DECISIONS §2). The old app compared
+ * each point to `data[i-1]` of the FILTERED slice, so the first dot in view was
+ * always blue — switch to Week and Monday's genuine loss stopped being green
+ * purely because Sunday had scrolled off screen. A dot's colour is a fact about
+ * the weigh-in, not about the viewport.
+ *
+ * `fullSeries` is the whole history; `dates` is the visible window. Returns one
+ * direction per entry in `dates`, in the order given — Chart.js wants a parallel
+ * array.
+ *
+ * A date absent from `fullSeries` has no knowable predecessor and reports
+ * `first`. That cannot happen when `dates` is a slice of the same series, which
+ * is the only way this is called.
+ */
+export function weightDirections(
+  fullSeries: readonly WeightEntry[],
+  dates: readonly string[],
+): WeightDirection[] {
+  const ws = sortByDate(fullSeries);
+  const indexOf = new Map(ws.map((entry, i) => [entry.date, i]));
+
+  return dates.map((date) => {
+    const i = indexOf.get(date);
+    if (i === undefined || i === 0) return "first";
+
+    const now = ws[i].weight;
+    const before = ws[i - 1].weight;
+    if (now < before) return "down";
+    if (now > before) return "up";
+    return "flat";
+  });
+}
+
+/**
  * The amber "target −0.5kg/wk" line: where weight WOULD be, descending at
  * {@link TARGET_RATE_KG_PER_DAY} from the very first weigh-in. Old app `bDS()`
  * line 3659.

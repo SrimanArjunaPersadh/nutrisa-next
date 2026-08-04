@@ -19,6 +19,7 @@ import { UndoToast, type ToastMessage } from "@/components/undo-toast";
 import { HistoryCard } from "@/components/weight/history-card";
 import { LogWeightCard } from "@/components/weight/log-weight-card";
 import { StatTile, type TileTone } from "@/components/weight/stat-tile";
+import { WeightChart } from "@/components/weight/weight-chart";
 import { WeightFilterTabs } from "@/components/weight/weight-filter-tabs";
 import { formatDayCompact, formatDayShort, toIsoDay, todayIso } from "@/lib/date";
 import {
@@ -219,13 +220,13 @@ export default function WeightPage() {
               </div>
             )}
 
-            {/* The chart lands in the next step of Phase 3. The filter above is
-                already live, and the tiles and history below react to it. */}
-            <div className="mt-3 grid h-40 place-items-center rounded-card border border-dashed border-border bg-bg3">
-              <p className="text-label text-text-3">
-                Chart arrives next — filter is live
-              </p>
-            </div>
+            {/* FULL series and full trend in, filtered window alongside. The
+                chart slices; it never recomputes (§2). */}
+            <WeightChart
+              full={weights}
+              visible={view.filtered}
+              trend={view.trend}
+            />
           </section>
 
           <div className="grid grid-cols-2 gap-3 md:grid-cols-4">

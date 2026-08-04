@@ -9,6 +9,7 @@ import {
   weeklyAverages,
   weeklyRate,
   weeklyRateAt,
+  weightDirections,
 } from "../../lib/engine/trend";
 import type { WeightEntry } from "../../lib/engine/types";
 import fixture from "../fixtures/weight_logs.json";
@@ -425,5 +426,50 @@ describe("eta — from the trend, at the assumed rate, from today", () => {
       throw new Error("expected projections");
     }
     expect(later.date.getTime()).toBeGreaterThan(earlier.date.getTime());
+  });
+});
+
+describe("weightDirections — compared to the true predecessor, not the visible one", () => {
+  const DATES = ROWS.map((r) => r.date);
+
+  it("reads each weigh-in against the one before it", () => {
+    const dirs = weightDirections(SERIES, DATES);
+    expect(dirs).toHaveLength(ROWS.length);
+
+    expect(dirs[0]).toBe("first"); // 5 May, 91.1 — nothing to compare against
+    expect(dirs[DATES.indexOf("2026-05-07")]).toBe("down"); // 88.9 after 91.1
+    expect(dirs[DATES.indexOf("2026-05-08")]).toBe("up"); // 89.8 after 88.9
+  });
+
+  it("distinguishes flat from first", () => {
+    // 12 May is 90.3 and so was 9 May — the scale did not move.
+    expect(weightDirections(SERIES, DATES)[DATES.indexOf("2026-05-12")]).toBe(
+      "flat",
+    );
+  });
+
+  it("keeps a dot's colour when the window scrolls past it — THE ZOOM FIX", () => {
+    // PHASE-3-DECISIONS §2. 1 Jun (87.3) is a real loss against 31 May (88.2),
+    // but the old app compared it to `data[i-1]` of the FILTERED slice, where it
+    // had no predecessor — so filtering to June turned a green dot blue.
+    const juneDates = DATES.filter((d) => d.startsWith("2026-06"));
+    const june = SERIES.filter((e) => e.date.startsWith("2026-06"));
+
+    expect(weightDirections(SERIES, juneDates)[0]).toBe("down");
+    expect(weightDirections(june, juneDates)[0]).toBe("first"); // old behaviour
+  });
+
+  it("gives the same direction for a date however the window is sliced", () => {
+    const all = weightDirections(SERIES, DATES);
+    const one = weightDirections(SERIES, ["2026-06-16"]);
+    expect(one[0]).toBe(all[DATES.indexOf("2026-06-16")]);
+  });
+
+  it("reports first for a date the series does not contain", () => {
+    expect(weightDirections(SERIES, ["1999-01-01"])).toEqual(["first"]);
+  });
+
+  it("has no directions to report for an empty history", () => {
+    expect(weightDirections([], [])).toEqual([]);
   });
 });

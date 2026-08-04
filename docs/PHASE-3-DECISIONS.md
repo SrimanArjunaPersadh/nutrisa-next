@@ -114,6 +114,34 @@ are the day-to-day signal, and they still carry the §4 semantic meanings.
 
 The legend (3046–3050) gains a fourth item and its swatches read the same tokens.
 
+### 5a. Built 2026-08-05 — three consequences of adding the trend line
+
+- **The daily fill is dropped.** The old daily dataset carried `fill:true` with a
+  blue `0A` wash (3665). Recoloured to `--text-3` per the table above, that wash
+  becomes a grey smear under the line the chart is now built around. The line
+  keeps its per-point dots; only the area goes.
+- **The y-axis now sizes on raw AND trend.** `mO()` (3671) took its min/max from
+  the visible RAW weights alone, which was correct when nothing else could exceed
+  them. In a Week view the trend still carries months of history and can sit above
+  the week's heaviest reading, so it would clip. In-window trend values join the
+  calculation. Target and goal keep the old clipping — over a long window the
+  amber line descends off the bottom by design.
+- **The tooltip does NOT gain a trend row.** It still filters to dataset 0 and
+  reads `${y} kg` (2402). The trend already has a tile, and a two-line tooltip on
+  a phone covers the chart it is describing.
+
+**Tick font: the BODY face, not Barlow Condensed.** The old app asked canvas for
+`family:'Barlow Condensed', weight:'600'` (2409). We load that family in exactly
+one cut — 800 italic (CLAUDE.md §4.2) — so canvas would faux-synthesise a 600
+upright, which is the exact failure the `font-display` utility exists to prevent.
+10px axis ticks in the body face, which is loaded at 400–600.
+
+**Grid lines.** The old app wrote them as 8-digit hex (`#1A1E2955`, `#1E233055`).
+Hex lives only in `globals.css`, and the second of those two is not a token at
+all, so both grids read `--bg3` at 0.33 alpha through a `withAlpha` helper that
+parses whatever `getComputedStyle` returns. One axis is a shade different from the
+old app; no number moves.
+
 ## 6. Delete gets an Undo toast, not a confirm
 
 **Found:** `delW()` (3633) deletes on a single tap with no confirmation.
@@ -277,10 +305,14 @@ agrees at SAST and under a UTC test runner, but at a negative UTC offset every b
 shifts by a day. Ours is UTC throughout — identical output everywhere the old app has
 actually run, minus the trap. Owner confirmed 2026-08-04.
 
-**Still open:** the dot colours of §2 need a fourth helper,
-`weightDirections(fullSeries, dates)` returning `'first' | 'down' | 'up' | 'flat'`,
-so that comparison also runs against the full series. To be added when the chart
-lands; this list becomes four.
+4. **`weightDirections(fullSeries, dates)`** — added 2026-08-05 with the chart,
+   returning `'first' | 'down' | 'up' | 'flat'` per visible date. The dot colours
+   of §2: each weigh-in is compared to its TRUE predecessor in the full history,
+   not to `data[i-1]` of the filtered slice. The fixture pins the case that proves
+   it — 1 Jun (87.3) is a real loss against 31 May (88.2), so filtering to June
+   used to turn a green dot blue. `first` and `flat` are kept distinct even though
+   both render blue: they mean different things, and the old app's single branch
+   for them was a rendering shortcut, not a statement about the data.
 
 ## 10. Empty state — the old app shows `0.0 kg`, we do not
 
@@ -319,9 +351,26 @@ The old page is `g2`/`g4` grids sized for a laptop. Phone-first here: tiles are
 `grid-cols-2 md:grid-cols-4`, and the Log Weight / History pair is stacked below
 `md`. Nothing is hidden at any width — the same content reflows.
 
-## 13. What is NOT yet built
+## 13. ~~What is NOT yet built~~ — CLOSED 2026-08-05
 
-The chart. The card renders the live filter and a placeholder in its place. The
-tiles, history and Weekly Averages below it are already filter-driven, so the
-filter is verifiable now — the chart is the last piece of Phase 3, and it needs
-`weightDirections` from §9.
+The chart landed. `components/weight/weight-chart.tsx` renders all four datasets
+(§1, §5), reads every colour from the live CSS variables (§4), and takes the full
+series plus the visible window as separate props so the zoom fix (§2) is a
+signature and not a convention — there is no way to hand it only a slice.
+
+`chart.js@4` is installed and its components are registered explicitly
+(`CategoryScale`, `Filler`, `LineController`, `LineElement`, `LinearScale`,
+`PointElement`, `Tooltip`) rather than importing `chart.js/auto`, which would pull
+in every controller in the library for a line chart. The instance is created in an
+effect and destroyed in its cleanup.
+
+**A fifth state inside the Happy state:** a filtered window can be legitimately
+empty (a month with no weigh-ins) while the page as a whole is `ready`. The old
+app did `if(!fw.length) return`, which left the PREVIOUS chart on screen — the
+wrong data under the right filter, silently. We render an invitation to widen the
+range instead. `useWeights`' `empty` remains what it always was: no weigh-ins at
+all, anywhere (§10).
+
+With this, Phase 3's code is complete. What remains is not code: the side-by-side
+numeric verification against the old app on the real phone, and the four STATUS.md
+cells that only that verification can tick.
