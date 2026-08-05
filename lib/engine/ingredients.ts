@@ -86,7 +86,8 @@ export function scaleIngredients(
 }
 
 /**
- * Total a scaled list. Old app `sumIngs` (642–649).
+ * Total a list of macro-bearing rows. Old app `sumIngs` (642–649) — and, as it
+ * turns out, `mbTotals` (949) and `qlTotals` (2211) as well.
  *
  * THE ROUNDING HERE IS A RUNNING ONE AND THAT IS NOT A MISTAKE. The old app
  * rounds the accumulator to 1 dp at EVERY step and feeds the rounded value
@@ -100,8 +101,21 @@ export function scaleIngredients(
  * Frozen. `dayTotals` rounds ONCE at the end and this rounds at every step; both
  * are correct, because both are what the old app wrote and both produced stored
  * values. Do not unify them.
+ *
+ * **PARAMETER WIDENED IN PHASE 5 (eng review R7) — `Macros[]`, not
+ * `ScaledIngredient[]`.** This function only ever read the four macro fields, and
+ * the old app's meal-builder and Quick Log totals are this same accumulator
+ * character for character: same `{0,0,0,0}` seed, same 1 dp fed forward, same
+ * refusal to round `kcal` per step. Widening the parameter lets both composers
+ * reuse the oracle-tested original instead of growing a twin.
+ *
+ * **Do NOT write a `builderTotals`.** A second function with identical
+ * arithmetic is precisely how `dayTotals` and this one would have drifted apart
+ * if PHASE-4-DECISIONS §7a had not caught them. Runtime behaviour is unchanged
+ * and every existing caller still type-checks — `ScaledIngredient` extends
+ * `Macros`.
  */
-export function sumIngredients(ings: readonly ScaledIngredient[]): Macros {
+export function sumIngredients(ings: readonly Macros[]): Macros {
   return ings.reduce<Macros>(
     (a, x) => ({
       kcal: a.kcal + x.kcal,

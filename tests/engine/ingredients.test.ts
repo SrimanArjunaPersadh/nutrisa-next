@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import type { StoredIngredient } from "@/lib/data";
+import type { Macros } from "@/lib/engine/types";
 import {
   baseQty,
   scaleIngredient,
@@ -161,6 +162,39 @@ describe("sumIngredients — the running 1 dp accumulate", () => {
 
   it("is zero for no ingredients", () => {
     expect(sumIngredients([])).toEqual({ kcal: 0, pro: 0, carb: 0, fat: 0 });
+  });
+
+  it("accepts bare Macros — the Phase 5 widening (R7)", () => {
+    // The parameter widened from ScaledIngredient[] to Macros[] so the meal
+    // builder and Quick Log can reuse this accumulator instead of growing a
+    // twin: `mbTotals` (949) and `qlTotals` (2211) are this function, character
+    // for character. If someone narrows the parameter back, this stops
+    // compiling — which is the point.
+    const composerRows: Macros[] = [
+      { kcal: 330, pro: 18.9, carb: 6, fat: 20.9 },
+      { kcal: 304, pro: 10, carb: 54, fat: 5 },
+    ];
+
+    expect(sumIngredients(composerRows)).toEqual({
+      kcal: 634,
+      pro: 28.9,
+      carb: 60,
+      fat: 25.9,
+    });
+  });
+
+  it("gives a composer row list and a scaled list the same answer", () => {
+    // Same numbers in, same numbers out, whichever shape carries them. This is
+    // what makes reusing it for the composers safe rather than merely tidy.
+    const scaled = scaleIngredients(BREKKIE);
+    const bare: Macros[] = scaled.map(({ kcal, pro, carb, fat }) => ({
+      kcal,
+      pro,
+      carb,
+      fat,
+    }));
+
+    expect(sumIngredients(bare)).toEqual(sumIngredients(scaled));
   });
 });
 
