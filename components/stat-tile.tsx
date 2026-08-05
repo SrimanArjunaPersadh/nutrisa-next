@@ -1,6 +1,7 @@
 /**
  * One stat tile. Ports the old app's `.tile` / `.tb .tg .tr .ta` variants
- * (3019–3027, 3052–3057).
+ * (3019–3027, 3052–3057). Shared by Weight and Nutrition — it moved out of
+ * `components/weight/` in Phase 4, when the second surface needed it.
  *
  * Colour here is meaning, never decoration (§1.5): green is loss, red is gain,
  * amber is a caution, blue is the app's primary. A tile picks its tone from what

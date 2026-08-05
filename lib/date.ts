@@ -39,6 +39,34 @@ export function fromIsoDay(iso: string): Date {
   return new Date(y, m - 1, d);
 }
 
+/**
+ * The wall-clock stamp a logged meal carries. Old app `now()` (485).
+ *
+ * `H:MM` — hours UNPADDED, minutes padded. `meal_logs.logged_time` is free text
+ * that nothing ever parses (PHASE-2-DECISIONS), so this is a display convention
+ * rather than a data one — but it is the convention every existing row was
+ * written in, and the two apps run side by side during cutover. Reproduced
+ * exactly, missing hour pad included.
+ */
+export function nowHM(): string {
+  const d = new Date();
+  return `${d.getHours()}:${String(d.getMinutes()).padStart(2, "0")}`;
+}
+
+/**
+ * The calendar day before this one. Old app `copyYesterdayMeals` (2050–2052),
+ * which builds it from LOCAL parts exactly like this.
+ *
+ * Local, not UTC, and deliberately so: "yesterday" is a fact about the day the
+ * user is standing in. The `YYYY-MM-DD` string is what crosses back out, so the
+ * engine's UTC convention is never handed a `Date` — see this file's header.
+ */
+export function previousDay(iso: string): string {
+  const d = fromIsoDay(iso);
+  d.setDate(d.getDate() - 1);
+  return toIsoDay(d);
+}
+
 /** `"3 Aug 2026"` — the old app's trigger-button format (2897). */
 export function formatDayShort(iso: string): string {
   return fromIsoDay(iso).toLocaleDateString("en-GB", {

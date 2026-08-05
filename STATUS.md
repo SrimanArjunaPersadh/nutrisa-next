@@ -10,7 +10,7 @@ Legend: `[ ]` not done · `[x]` verified on phone · `[-]` not applicable
 | Surface | Empty | Loading | Error | Happy |
 |---------|-------|---------|-------|-------|
 | Dashboard | [ ] | [ ] | [ ] | [ ] |
-| Nutrition | [ ] | [ ] | [ ] | [ ] |
+| Nutrition | [x] | [x] | [x] | [x] |
 | Weight | [x] | [x] | [x] | [x] |
 | Library / Meal Builder | [ ] | [ ] | [ ] | [ ] |
 | Add-food: barcode scan | [ ] | [ ] | [ ] | [ ] |

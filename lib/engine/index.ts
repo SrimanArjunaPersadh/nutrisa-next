@@ -37,3 +37,31 @@ export {
 export type { AtwaterResult, LabelMacros } from "./nutrition";
 
 export { isGramUnit, macrosForQuantity } from "./macros";
+
+export {
+  CARB_MAX,
+  CARB_MIN,
+  CEILINGS,
+  FAT_MAX,
+  FAT_MIN,
+  KCAL_MAX,
+  KCAL_MIN,
+  KCAL_TARGET,
+  PRO_MAX,
+  PRO_MIN,
+  PRO_TARGET,
+  dayTotals,
+  macroStatus,
+  remaining,
+  remainingMacros,
+} from "./day";
+export type { MacroStatus } from "./day";
+
+export {
+  baseQty,
+  scaleIngredient,
+  scaleIngredients,
+  sumIngredients,
+  toStoredIngredients,
+} from "./ingredients";
+export type { ScaledIngredient } from "./ingredients";
