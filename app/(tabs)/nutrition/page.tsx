@@ -24,10 +24,11 @@ import {
   toLoggedIngredients,
 } from "@/components/nutrition/saved-meals";
 import { UndoToast, type ToastMessage } from "@/components/undo-toast";
-import type { CustomMeal, LoggedMeal } from "@/lib/data";
+import type { CustomMeal, LoggedMeal, StoredIngredient } from "@/lib/data";
 import { deleteMeal } from "@/lib/data";
 import { formatDayCompact, nowHM, todayIso } from "@/lib/date";
 import { dayTotals } from "@/lib/engine/day";
+import type { Macros } from "@/lib/engine/types";
 import { useCustomMeals } from "@/lib/hooks/useCustomMeals";
 import { useDay } from "@/lib/hooks/useDay";
 
@@ -35,7 +36,7 @@ export default function NutritionPage() {
   const today = todayIso();
   const [date, setDate] = useState(today);
 
-  const { meals, state, error, refetch, log, remove, copyYesterday } =
+  const { meals, state, error, refetch, log, remove, update, copyYesterday } =
     useDay(date);
   const library = useCustomMeals();
 
@@ -43,6 +44,15 @@ export default function NutritionPage() {
   const [deleting, setDeleting] = useState<string | null>(null);
   const [logging, setLogging] = useState<string | null>(null);
   const [copying, setCopying] = useState(false);
+  /**
+   * The open editor's row id, and the row being saved.
+   *
+   * Held by the PAGE, not by the list, so that a refetch — which replaces every
+   * meal object — cannot reopen or close an editor as a side effect. The id
+   * survives the new objects; a React key or index would not.
+   */
+  const [openId, setOpenId] = useState<string | null>(null);
+  const [saving, setSaving] = useState<string | null>(null);
 
   // The day's arithmetic, all of it. `meals` is what the DB returned; the
   // mappers already rounded each row on read (Phase 2, frozen), and `dayTotals`
@@ -134,6 +144,42 @@ export default function NutritionPage() {
       });
     },
     [remove, undoDelete],
+  );
+
+  /* ---- Re-portioning, the gram editor (§3a) ------------------------------ */
+
+  const handleSave = useCallback(
+    async (
+      meal: LoggedMeal,
+      macros: Macros,
+      ings?: readonly StoredIngredient[] | null,
+    ) => {
+      if (!meal._id) return;
+
+      setSaving(meal._id);
+      const result = await update(meal._id, macros, ings);
+      setSaving(null);
+
+      if (!result.ok) {
+        // The editor STAYS OPEN on failure, holding the user's edit. Closing it
+        // would discard the work and read as a silent revert (§4.4).
+        setToast({
+          text:
+            result.error.kind === "network"
+              ? `Couldn’t reach the server — ${meal.name} was not updated.`
+              : `Couldn’t update ${meal.name}: ${result.error.message}`,
+          tone: "error",
+        });
+        return;
+      }
+
+      setOpenId(null);
+      setToast({
+        text: `Updated ${meal.name} · ${macros.kcal} kcal`,
+        tone: "info",
+      });
+    },
+    [update],
   );
 
   /* ---- Copy Yesterday (§6) ---------------------------------------------- */
@@ -261,6 +307,11 @@ export default function NutritionPage() {
                   meals={meals}
                   onDelete={(meal) => void handleDelete(meal)}
                   deleting={deleting}
+                  openId={openId}
+                  onToggle={setOpenId}
+                  library={library.meals}
+                  onSave={handleSave}
+                  saving={saving}
                 />
               )}
             </div>

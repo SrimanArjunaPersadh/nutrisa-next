@@ -27,10 +27,13 @@ import {
   addMeal,
   deleteMeal,
   fetchMealsForDate,
+  updateMeal,
   type DataError,
   type LoggedMeal,
   type Result,
+  type StoredIngredient,
 } from "@/lib/data";
+import type { Macros } from "@/lib/engine/types";
 import { nowHM, previousDay } from "@/lib/date";
 
 /** The four states, named exactly as Plan §4.4 names them. */
@@ -73,6 +76,18 @@ export type UseDay = {
   readonly log: (meal: NewMeal) => Promise<Result<LoggedMeal>>;
   /** Delete a logged meal, then refetch. Same reporting contract as {@link log}. */
   readonly remove: (id: string | undefined) => Promise<Result<null>>;
+  /**
+   * Re-portion or correct a logged meal, then refetch.
+   *
+   * `ings` follows `updateMeal`'s three-way contract: `undefined` leaves
+   * `ings_json` untouched (a macro-only edit), an array replaces it, `null`
+   * clears it.
+   */
+  readonly update: (
+    id: string,
+    macros: Macros,
+    ings?: readonly StoredIngredient[] | null,
+  ) => Promise<Result<LoggedMeal>>;
   /** Copy every meal from the previous day onto this one (§6). */
   readonly copyYesterday: () => Promise<CopyResult>;
 };
@@ -147,6 +162,19 @@ export function useDay(date: string): UseDay {
     [refetch],
   );
 
+  const update = useCallback(
+    async (
+      id: string,
+      macros: Macros,
+      ings?: readonly StoredIngredient[] | null,
+    ) => {
+      const result = await updateMeal(id, macros, ings);
+      if (result.ok) await refetch();
+      return result;
+    },
+    [refetch],
+  );
+
   const copyYesterday = useCallback(async (): Promise<CopyResult> => {
     const from = previousDay(date);
 
@@ -190,5 +218,5 @@ export function useDay(date: string): UseDay {
     return { kind: "copied", ids, from };
   }, [date, refetch]);
 
-  return { meals, state, error, refetch, log, remove, copyYesterday };
+  return { meals, state, error, refetch, log, remove, update, copyYesterday };
 }

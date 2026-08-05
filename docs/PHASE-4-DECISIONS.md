@@ -100,15 +100,37 @@ consumed figure is still computed identically and still shown, in the bars.
 | Macro bars (kcal + 3 macros) | `mac()`, 2730–2747 | Yes, consumed-vs-ceiling, unchanged |
 | Saved Meals list, grouped by category, `+` to log | 2800–2840 | Yes, WITHOUT search (§4) |
 | Logged list: name, time, kcal, macro line, delete | 2751–2775 | Yes |
-| Logged row expand → gram/ingredient editor | `loggedItemEditor` | **No — Phase 5** |
+| Logged row expand → gram/ingredient editor | `loggedItemEditor` | Yes — PULLED FORWARD (§3a) |
 | Copy Yesterday | 2044–2071 | Yes, re-ruled (§6) |
 | Quick Log (free-text ingredient search) | `qlRenderWidget`, 2311 | **No — Phase 5** |
+| "Add Item" search inside the editor | `logAddSearchWidget`, 3410 | **No — Phase 5** (§3a) |
 | Water tracker | — | **No — CUT (§1)** |
 
-**The expandable editors are the Phase 4/5 seam.** Plan §5.4 gives the "expandable
-gram editor with live macro calc respecting `unitType`" to Phase 5, and both the
-logged-row editor and Quick Log are that same editor wearing different hats. A
-logged meal in Phase 4 can be logged and deleted, not re-portioned.
+### 3a. AMENDED 2026-08-05 — the gram editor is pulled into Phase 4
+
+**This section originally put the logged-row editor in Phase 5**, on the reasoning
+that Plan §5.4 owns "expandable gram editor with live macro calc respecting
+`unitType`". **Owner overruled it at build time:** a logged meal that can be
+logged and deleted but never re-portioned is too thin to use daily, and Phase 5 is
+a whole phase away.
+
+**What made this cheap enough to pull — the arithmetic needs no food database.**
+A stored ingredient carries its OWN macros for its OWN quantity (`meal_logs.
+ings_json`), so re-portioning is pure proportion: `calcIng` (627) computes
+`ratio = currentQty / baseQty` and scales what is already there. It never looks up
+a per-100g basis, a `unitType`, or `FOOD_DB`. §5.4's "respecting `unitType`"
+describes the OTHER path — a food being portioned fresh from the library — and
+that one genuinely is Phase 5.
+
+**What stayed behind: the "Add Item" search** inside the editor
+(`logAddSearchWidget`, 3410). It searches the food database and renders a results
+dropdown, which is the dropdown rule and Phase 5's entire subject. Its absence
+simplifies the port considerably — the old app's `_logEditorIngs` / `_logAddedIngs`
+split exists ONLY to track which rows came from that search, so with no search
+there is one flat list.
+
+New engine module `lib/engine/ingredients.ts` (§7a). The editor is
+`components/nutrition/meal-editor.tsx`; `useDay` gained `update`.
 
 ## 4. The picker — category list and a `+`, no search
 
@@ -205,6 +227,33 @@ Phase 2).
 
 `pct(v, mx)` (518) is bar geometry — a width, not a nutrition fact — and stays in
 the component.
+
+### 7a. `lib/engine/ingredients.ts` — added with the gram editor (§3a)
+
+Ports `baseG` (625), `calcIng` (627), `sumIngs` (642) and the storable-shape half
+of `updateLoggedEntry` (3360–3365). These figures are written BACK to `meal_logs`,
+so they are stored values and the old app's rounding is the oracle.
+
+**TWO DIFFERENT ROUNDING DISCIPLINES NOW LIVE IN THE ENGINE AND BOTH ARE CORRECT.**
+`dayTotals` sums unrounded and rounds ONCE at the end (§7). `sumIngredients`
+rounds the accumulator to 1 dp at EVERY step and feeds the rounded value forward,
+exactly like `trendWeight` does at 2 dp. They differ in the last decimal on a long
+list. Do not unify them: each is what the old app wrote at its own call site, and
+each produced stored values.
+
+`kcal` is not rounded per step inside `sumIngredients`, because `scaleIngredient`
+already made every kcal an integer.
+
+**`baseQty`'s `|| 100` fallback is carried forward with its bug.** An unparseable
+quantity becomes 100 — a guess, but the guess every stored row was written
+against. It also swallows a genuine `"0"`, turning it into 100. Pinned by a test
+so nobody "fixes" it without meaning to.
+
+**The edit becomes the new baseline.** `toStoredIngredients` writes each row back
+at its current quantity with the macros for that quantity, so re-opening the
+editor shows ratio 1 everywhere and a second edit scales from where the first left
+off. That is the old app's behaviour (3360) and it is what keeps repeated edits
+from compounding.
 
 ## 8. Data — `useDay(date)`, following the Phase 3 §8 hook shape
 

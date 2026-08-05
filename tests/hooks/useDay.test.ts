@@ -20,13 +20,17 @@ vi.mock("@/lib/data", () => ({
   fetchMealsForDate: vi.fn(),
   addMeal: vi.fn(),
   deleteMeal: vi.fn(),
+  updateMeal: vi.fn(),
 }));
 
-const { fetchMealsForDate, addMeal, deleteMeal } = await import("@/lib/data");
+const { fetchMealsForDate, addMeal, deleteMeal, updateMeal } = await import(
+  "@/lib/data"
+);
 
 const mockFetch = vi.mocked(fetchMealsForDate);
 const mockAdd = vi.mocked(addMeal);
 const mockDelete = vi.mocked(deleteMeal);
+const mockUpdate = vi.mocked(updateMeal);
 
 const meal = (name: string, sortOrder: number, id = name): LoggedMeal => ({
   _id: id,
@@ -62,6 +66,7 @@ beforeEach(() => {
   mockFetch.mockResolvedValue(ok(DAY));
   mockAdd.mockResolvedValue(ok(DAY[0]));
   mockDelete.mockResolvedValue(ok(null));
+  mockUpdate.mockResolvedValue(ok(DAY[0]));
 });
 
 describe("useDay — the four states", () => {
@@ -229,6 +234,68 @@ describe("useDay — writes", () => {
     });
 
     expect(mockDelete).toHaveBeenCalledWith("Oats");
+  });
+});
+
+describe("useDay — update (the gram editor's write path)", () => {
+  const MACROS = { kcal: 400, pro: 25, carb: 40, fat: 12 };
+  const INGS = [
+    { name: "Oats", qty: "60", kcal: 220, pro: 8, carb: 38, fat: 4 },
+  ];
+
+  it("passes ingredients through so ings_json is replaced", async () => {
+    const { result } = renderHook(() => useDay("2026-06-01"));
+    await waitFor(() => expect(result.current.state).toBe("ready"));
+
+    await act(async () => {
+      await result.current.update("Oats", MACROS, INGS);
+    });
+
+    expect(mockUpdate).toHaveBeenCalledWith("Oats", MACROS, INGS);
+  });
+
+  it("omits ingredients entirely on a macro-only edit", async () => {
+    // `updateMeal`'s three-way contract: undefined leaves the stored column
+    // untouched, null clears it. A meal with no ingredient list must not have
+    // its ings_json wiped just because its macros were corrected.
+    const { result } = renderHook(() => useDay("2026-06-01"));
+    await waitFor(() => expect(result.current.state).toBe("ready"));
+
+    await act(async () => {
+      await result.current.update("Oats", MACROS);
+    });
+
+    expect(mockUpdate).toHaveBeenCalledWith("Oats", MACROS, undefined);
+  });
+
+  it("refetches after a successful update", async () => {
+    const { result } = renderHook(() => useDay("2026-06-01"));
+    await waitFor(() => expect(result.current.state).toBe("ready"));
+    const reads = mockFetch.mock.calls.length;
+
+    await act(async () => {
+      await result.current.update("Oats", MACROS, INGS);
+    });
+
+    expect(mockFetch.mock.calls.length).toBe(reads + 1);
+  });
+
+  it("a failed update leaves the list alone and returns the Result", async () => {
+    const { result } = renderHook(() => useDay("2026-06-01"));
+    await waitFor(() => expect(result.current.state).toBe("ready"));
+
+    mockUpdate.mockResolvedValue(fail("network", "offline"));
+    let returned;
+    await act(async () => {
+      returned = await result.current.update("Oats", MACROS, INGS);
+    });
+
+    expect(result.current.state).toBe("ready");
+    expect(result.current.meals).toEqual(DAY);
+    expect(returned).toEqual({
+      ok: false,
+      error: { kind: "network", message: "offline" },
+    });
   });
 });
 

@@ -56,3 +56,12 @@ export {
   remainingMacros,
 } from "./day";
 export type { MacroStatus } from "./day";
+
+export {
+  baseQty,
+  scaleIngredient,
+  scaleIngredients,
+  sumIngredients,
+  toStoredIngredients,
+} from "./ingredients";
+export type { ScaledIngredient } from "./ingredients";
