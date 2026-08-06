@@ -441,3 +441,81 @@ real phone. Claude Code cannot reach the device.
   arrives with it.
 - `findCustomFoodByBarcode` (2100) and the upsert-on-`barcode` branch become live
   again, which is when §9b's constraint question is answered for both branches.
+
+---
+
+## 21. Post-merge review findings (2026-08-06)
+
+**`/review` ran AFTER the merge, not before it.** PR #2 and PR #3 landed Phase 5
+on `main` (`301b527`) while the pre-landing gate in `CLAUDE.md` ("`/review`
+before every commit") had not been run, and before the `STATUS.md` phone
+verification. The findings below were therefore fixed forward on
+`phase-5-review-fixes` rather than caught at the gate. Recorded because the
+ordering is the lesson, not just the bugs.
+
+### 21a. P1 — a deleted Add Item row handed its quantity to the row below
+
+`components/nutrition/meal-editor.tsx`, `MacroEditor`. Removing an added row
+filtered `added` but not `qty`, which is POSITIONAL and paired with `added` by
+index inside `scaleIngredients`. Every row below the deleted one shifted up into
+someone else's quantity override.
+
+Reproduction: add Rolled Oats, add Banana, set the oats to 200g, delete the oats.
+The banana lands at index 0, inherits `qty[0] = 200`, and renders — and SAVES —
+as 200 bananas, 17 800 kcal. Nothing on screen suggests a problem.
+
+This is the exact failure class Plan §6's oracle exists to catch: a wrong number
+written to `meal_logs` with a plausible-looking screen above it.
+
+`IngredientEditor` never had the bug. It marks removals in a `Set<number>` over a
+stable array, so indices never move — which is why the same feature is correct in
+one branch and wrong in the other, and why the fix is to filter `qty` alongside
+`added` rather than to unify the two editors.
+
+**The file had ZERO test coverage.** `tests/components/meal-editor.test.tsx` is
+new, and the regression test was verified to fail against the unfixed code
+(`expected '200' to be '1'`) before being accepted.
+
+### 21b. React key collided for a custom food sharing a built-in's name
+
+`components/library/food-search.tsx` keyed options on `` `${name}-${unit}` ``.
+D6 (§6) exists precisely because a custom food may carry a built-in's name, and
+it will usually carry the same unit too. Duplicate keys are a warning at best and
+the WRONG food selected after a re-render at worst. Now `foodIdentity(food)` —
+the function D6 already provides.
+
+### 21c. The mousedown/click guard could stick
+
+The `selecting` boolean was set on mousedown and cleared only inside `onClick`. A
+mousedown that never produces a click — drag the finger off the option, or an
+OS-cancelled touch — left it stuck `true`, and the next click-only selection
+(keyboard Enter, or a screen reader's synthetic click) was silently swallowed.
+Replaced with a timestamp, which ages out on its own.
+
+### 21d. A failed custom-foods read was silent on Nutrition
+
+The Library page says so; the Nutrition page did not, so Quick Log and Add Item
+would quietly show the built-in 74 only. Same reasoning as D7's unusable-foods
+count: a user searching for a food they saved must be able to learn why it is not
+there. One line above Quick Log covers both search boxes, because both read the
+page's single pool (D4).
+
+### 21e. A negative default quantity was accepted
+
+`NUM_RE` allows a leading `-` and the negative check covered only the four
+macros, so `defaultQty: -100` could be saved. `defaultQty || 100` treats it as a
+perfectly good number, so every composer row for that food would start negative.
+The old app has the same hole (1776/1799 parse with no range check); it is closed
+here because nothing legitimate is lost.
+
+### 21f. STILL OPEN — the overwrite warning depends on a successful read
+
+`components/library/meal-builder.tsx` derives `clash` from `library.meals`. If
+that read failed, no overwrite warning appears — but `saveCustomMeal` still
+upserts on `name` and replaces the stored row. A saved meal definition can be
+replaced without notice during an error state.
+
+The write itself stays correct; only the warning is missing. Options are to warn
+that duplicates could not be checked, to block saving until the library reads, or
+to leave it. **Not yet decided by the owner.** Recommendation on record: add the
+warning line — blocking punishes the user for a transient network blip.

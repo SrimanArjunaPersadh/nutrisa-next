@@ -437,9 +437,16 @@ function MacroEditor({ meal, pool, onSave, onCancel, saving }: MealEditorProps) 
                     <td className="py-1.5 pl-1 text-right">
                       <button
                         type="button"
-                        onClick={() =>
-                          setAdded((prev) => prev.filter((_, j) => j !== i))
-                        }
+                        onClick={() => {
+                          // THE QUANTITY OVERRIDES MUST MOVE WITH THE ROWS.
+                          // `qty` is positional and `scaleIngredients` pairs it
+                          // with `added` by index, so filtering one without the
+                          // other silently hands the deleted row's quantity to
+                          // whichever row shifts up into its slot — and that
+                          // wrong number is what gets written to `meal_logs`.
+                          setAdded((prev) => prev.filter((_, j) => j !== i));
+                          setQty((prev) => prev.filter((_, j) => j !== i));
+                        }}
                         aria-label={`Remove ${ing.name}`}
                         className="grid size-8 place-items-center rounded-btn text-text-3 transition-colors hover:text-red"
                       >

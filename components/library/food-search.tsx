@@ -40,7 +40,7 @@ import { Search } from "lucide-react";
 
 import { isGramUnit } from "@/lib/engine/macros";
 import { isFlagged, type SearchableFood } from "@/lib/food-db";
-import { searchFoods } from "@/lib/food-search";
+import { foodIdentity, searchFoods } from "@/lib/food-search";
 
 export type FoodSearchProps = {
   /** Built-ins + the user's custom foods. Built by `foodPool()` on the page. */
@@ -80,8 +80,19 @@ export function FoodSearch({
    * the click that follows, so without this a tap on an option would call
    * `onSelect` twice — and a double top-up is a wrong quantity that looks
    * deliberate.
+   *
+   * A TIMESTAMP, NOT A BOOLEAN, because the flag has to heal itself. A
+   * mousedown does not always produce a click — drag the finger off the option,
+   * or let the OS cancel the touch, and the pair never completes. A boolean set
+   * on mousedown and cleared only in the click handler stays stuck true, and the
+   * next click-only selection (keyboard Enter on a focused option, or a screen
+   * reader's synthetic click) is silently swallowed. A stale timestamp simply
+   * ages out.
    */
-  const selecting = useRef(false);
+  const lastMouseDown = useRef(0);
+
+  /** How long after a mousedown its paired click is still expected. */
+  const CLICK_PAIR_MS = 700;
 
   const listId = useId();
 
@@ -183,7 +194,13 @@ export function FoodSearch({
 
               return (
                 <button
-                  key={`${food.name}-${food.unit}`}
+                  /* `foodIdentity`, NOT name+unit. Eng review D6 exists
+                     precisely because a custom food may carry the same name as
+                     a built-in — and it will usually carry the same unit too.
+                     Two options sharing a React key is a duplicate-key warning
+                     at best and the WRONG food being selected after a
+                     re-render at worst. The id is what tells them apart. */
+                  key={foodIdentity(food)}
                   type="button"
                   role="option"
                   aria-selected={false}
@@ -191,14 +208,13 @@ export function FoodSearch({
                      happens here, on mousedown, not on click. */
                   onMouseDown={(event) => {
                     event.preventDefault();
-                    selecting.current = true;
+                    lastMouseDown.current = Date.now();
                     select(food);
                   }}
                   /* Keyboard and assistive-tech path only — a real tap has
                      already been handled above and is swallowed by the guard. */
                   onClick={() => {
-                    if (selecting.current) {
-                      selecting.current = false;
+                    if (Date.now() - lastMouseDown.current < CLICK_PAIR_MS) {
                       return;
                     }
                     select(food);
