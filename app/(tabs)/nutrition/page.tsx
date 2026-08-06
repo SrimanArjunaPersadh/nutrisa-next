@@ -3,11 +3,17 @@
 /**
  * The Nutrition tab — "log my food, fast" (Plan §5.2). Ports `vN()` (2749–2857).
  *
- * WHAT THIS PHASE SHIPS (PHASE-4-DECISIONS §3): date picker, four remaining-tiles,
- * the macro bars, the Saved Meals picker, the logged list with delete, and Copy
- * Yesterday. What it deliberately does NOT ship: search and Quick Log (Phase 5),
- * the per-row gram editor (Phase 5), drag-drop (cut, §5), and the water tracker
- * (cut, §1).
+ * WHAT PHASE 4 SHIPPED (PHASE-4-DECISIONS §3): date picker, four remaining-tiles,
+ * the macro bars, the Saved Meals picker, the logged list with delete, Copy
+ * Yesterday, and the per-row gram editor (pulled forward, §3a).
+ *
+ * WHAT PHASE 5 ADDS: Quick Log (`qlRenderWidget`, 2311) and the editor's "Add
+ * Item" search (`logAddSearchWidget`, 3403). Both need ingredient search, which
+ * is why §4 deferred them. Drag-drop stays CUT (§5) and so does the water
+ * tracker (§1).
+ *
+ * **The page owns `useCustomFoods()` and passes the pool down** (eng review D4).
+ * Quick Log and every open editor read one fetch, not one each.
  *
  * Every figure on this page comes from `lib/engine/day` applied to the day's
  * meals. Nothing here adds, and nothing here rounds (Plan §6).
@@ -19,6 +25,7 @@ import { DatePicker } from "@/components/date-picker";
 import { LoggedList } from "@/components/nutrition/logged-list";
 import { MacroBars } from "@/components/nutrition/macro-bars";
 import { MacroTiles } from "@/components/nutrition/macro-tiles";
+import { QuickLog } from "@/components/nutrition/quick-log";
 import {
   SavedMeals,
   toLoggedIngredients,
@@ -29,6 +36,8 @@ import { deleteMeal } from "@/lib/data";
 import { formatDayCompact, nowHM, todayIso } from "@/lib/date";
 import { dayTotals } from "@/lib/engine/day";
 import type { Macros } from "@/lib/engine/types";
+import { foodPool } from "@/lib/food-search";
+import { useCustomFoods } from "@/lib/hooks/useCustomFoods";
 import { useCustomMeals } from "@/lib/hooks/useCustomMeals";
 import { useDay } from "@/lib/hooks/useDay";
 
@@ -39,6 +48,12 @@ export default function NutritionPage() {
   const { meals, state, error, refetch, log, remove, update, copyYesterday } =
     useDay(date);
   const library = useCustomMeals();
+  const foods = useCustomFoods();
+
+  // Built-ins + the user's own foods, read once for every search box on the
+  // page (D4). A failed custom-foods read degrades search to the built-in 74
+  // rather than breaking it — `foods.foods` is simply empty.
+  const pool = useMemo(() => foodPool(foods.foods), [foods.foods]);
 
   const [toast, setToast] = useState<ToastMessage | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
@@ -89,6 +104,50 @@ export default function NutritionPage() {
           tone: "error",
         });
       }
+    },
+    [log],
+  );
+
+  /* ---- Quick Log (old app `qlLogAll`, 2270) ------------------------------ */
+
+  /**
+   * Returns whether the write landed, so Quick Log knows whether to clear its
+   * rows. A failed log keeps them — retyping four ingredients to retry a
+   * network blip is the kind of thing that makes people stop logging.
+   *
+   * `_libId` is null: this entry came from no library meal, so there is nothing
+   * for the editor to look up (the old app simply omits the field, 2285).
+   */
+  const handleQuickLog = useCallback(
+    async (
+      name: string,
+      macros: Macros,
+      ings: readonly StoredIngredient[],
+    ): Promise<boolean> => {
+      const result = await log({
+        name,
+        kcal: macros.kcal,
+        pro: macros.pro,
+        carb: macros.carb,
+        fat: macros.fat,
+        time: nowHM(),
+        _libId: null,
+        _ings: ings,
+      });
+
+      if (!result.ok) {
+        setToast({
+          text:
+            result.error.kind === "network"
+              ? `Couldn’t reach the server — ${name} was not logged.`
+              : `Couldn’t log ${name}: ${result.error.message}`,
+          tone: "error",
+        });
+        return false;
+      }
+
+      setToast({ text: `Logged ${name} · ${macros.kcal} kcal`, tone: "info" });
+      return true;
     },
     [log],
   );
@@ -276,6 +335,11 @@ export default function NutritionPage() {
           <MacroTiles totals={totals} />
           <MacroBars totals={totals} />
 
+          {/* Directly above the log, as the old app places it (2841–2844). */}
+          <section className="rounded-card border border-border bg-bg2 p-4">
+            <QuickLog pool={pool} onLog={handleQuickLog} />
+          </section>
+
           <section className="rounded-card border border-border bg-bg2 p-4">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <h2 className="text-card font-semibold text-text">
@@ -310,6 +374,7 @@ export default function NutritionPage() {
                   openId={openId}
                   onToggle={setOpenId}
                   library={library.meals}
+                  pool={pool}
                   onSave={handleSave}
                   saving={saving}
                 />

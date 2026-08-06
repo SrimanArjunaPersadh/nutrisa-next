@@ -17,6 +17,7 @@ import { ChevronDown, Trash2 } from "lucide-react";
 import { MealEditor } from "@/components/nutrition/meal-editor";
 import type { CustomMeal, LoggedMeal, StoredIngredient } from "@/lib/data";
 import type { Macros } from "@/lib/engine/types";
+import type { SearchableFood } from "@/lib/food-db";
 
 export type LoggedListProps = {
   meals: readonly LoggedMeal[];
@@ -27,6 +28,8 @@ export type LoggedListProps = {
   openId: string | null;
   onToggle: (id: string | null) => void;
   library: readonly CustomMeal[];
+  /** The food pool for the editor's "Add Item" widget (Phase 5). */
+  pool: readonly SearchableFood[];
   onSave: (
     meal: LoggedMeal,
     macros: Macros,
@@ -43,6 +46,7 @@ export function LoggedList({
   openId,
   onToggle,
   library,
+  pool,
   onSave,
   saving,
 }: LoggedListProps) {
@@ -121,6 +125,7 @@ export function LoggedList({
                 <MealEditor
                   meal={meal}
                   library={library}
+                  pool={pool}
                   saving={saving === id}
                   onCancel={() => onToggle(null)}
                   onSave={(macros, ings) => onSave(meal, macros, ings)}

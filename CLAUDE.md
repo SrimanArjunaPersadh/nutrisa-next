@@ -131,6 +131,17 @@ Tests in `tests/data/`. Rulings in `docs/PHASE-2-DECISIONS.md`.
 - **No localStorage, no merge, no offline queue** (§0.3). Cloud rows only.
 - `sort_order` is a REQUIRED caller parameter (the day's list length), never derived.
 
+## The food layer (Plan §5.4, built Phase 5)
+`lib/food-db.ts` — the 74 built-in foods as SOURCE, not data: no Supabase table, no
+`created_at`, never seeded. Their ORDER is load-bearing (pool is built-ins first,
+results capped at 8). Machine-verified against `old-index.html` by test.
+`lib/food-search.ts` — `foodPool`, `searchFoods`, `isUsableFood`, `foodIdentity`.
+`lib/units.ts` — `unitDisplayLabel`/`unitStep`/`unitMin`, DISPLAY not engine.
+`lib/hooks/useCollection.ts` — the shared body of `useCustomMeals` +
+`useCustomFoods`; the four-states union and sequence guard live there now.
+`lib/hooks/useComposer.ts` — the one composer behind the builder, Quick Log and
+Add Item.
+
 ## Precedents set in Phase 3 — they govern every surface after it
 Phase 3 (Weight) was the FIRST phase to ship a surface. `docs/PHASE-3-DECISIONS.md`.
 - **Chart.js via npm** (not the old CDN tag). Colours read from the live CSS vars via
@@ -152,8 +163,29 @@ Phase 3 (Weight) was the FIRST phase to ship a surface. `docs/PHASE-3-DECISIONS.
   zoom fix. That changed rendered PIXELS but no NUMBER. §1, §2.
 
 ## Current phase
-Phase 4 — Nutrition tab. See `plan.md` and `docs/PHASE-4-DECISIONS.md`.
-Phases 0–3 are merged. Rulings that bind this phase:
+Phase 5 — Library / Meal Builder. See `plan.md` and `docs/PHASE-5-DECISIONS.md`.
+Phases 0–4 are merged. Rulings that bind this phase:
+- **The dropdown rule lands HERE.** `components/library/food-search.tsx` is the
+  only hand-rendered dropdown in the app; `tests/components/food-search.test.tsx`
+  pins every clause. `onClick` is present ALONGSIDE `onMouseDown` for keyboard and
+  assistive tech — that is not a violation; a `selecting` ref keeps one tap from
+  adding two foods. §11.
+- **Add Custom Food is manual entry ONLY** — barcode/OFF/camera are Phase 6, OCR
+  Phase 7. Every food saved here has `barcode: null`, so the write always takes
+  the upsert-on-`name` branch. **Owner: verify that unique index in Supabase.** §1, §9b.
+- **Food identity is `_id`, not the name** (§6) — a deliberate divergence that
+  fixes a silent wrong-macro bug the old app also has.
+- **`useComposer` is the one composer** for the builder, Quick Log and Add Item.
+  Its `add` returns a boolean, never added-vs-topped-up: that value can only be
+  read inside the `setRows` updater, where it is stale by construction. §15.
+- **Quirks carried forward, all tested**: `qty + "g"` regardless of unit;
+  `defaultQty || 100` on a new row but `|| 5` on a top-up (and `|| 1` for a
+  per-unit food in Add Item); an empty quantity box reads as 0. §13.
+- **`afterEach(cleanup)` in every `.test.tsx` that renders** — this repo runs
+  Vitest without `globals: true`, so testing-library's auto-cleanup never
+  registers. §18.
+
+Phase 4 rulings, still binding:
 - **The water tracker is CUT** (§1) — not deferred. The old app's water UI was
   unreachable dead code (`adjustWater` has zero call sites), so there is no oracle to
   translate. This AMENDS the closed feature inventory (Plan §3, §5.2). `water_logs`
