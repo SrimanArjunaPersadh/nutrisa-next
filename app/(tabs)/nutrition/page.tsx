@@ -337,6 +337,19 @@ export default function NutritionPage() {
 
           {/* Directly above the log, as the old app places it (2841–2844). */}
           <section className="rounded-card border border-border bg-bg2 p-4">
+            {/* A failed custom-foods read degrades search to the built-in 74
+                rather than breaking it — but it must SAY so. Silently showing
+                a shorter list leaves the user searching for a food they saved
+                and never learning why it is missing, which is the same failure
+                `unusableFoods` exists to prevent on the Library page (D7).
+                Both search boxes on this page read this one pool, so one line
+                here covers Quick Log and every open editor's Add Item. */}
+            {foods.state === "error" && (
+              <p role="alert" className="mb-3 text-label text-amber">
+                Your custom foods couldn’t be loaded, so search is showing the
+                built-in list only. {foods.error?.message}
+              </p>
+            )}
             <QuickLog pool={pool} onLog={handleQuickLog} />
           </section>
 

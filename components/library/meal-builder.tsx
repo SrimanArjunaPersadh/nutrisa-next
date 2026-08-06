@@ -35,6 +35,16 @@ export type MealBuilderProps = {
   pool: readonly SearchableFood[];
   /** The library as it stands, for the overwrite check (old app 1067). */
   existing: readonly CustomMeal[];
+  /**
+   * Whether `existing` is the WHOLE library.
+   *
+   * False while the library is still loading, and false when its read failed —
+   * in both cases `existing` may be missing rows, so the absence of a clash
+   * proves nothing. Required rather than defaulted: a call site that has not
+   * thought about this would otherwise silently promise an overwrite check it
+   * cannot perform (PHASE-5-DECISIONS §21f).
+   */
+  existingKnown: boolean;
   onSave: (meal: NewCustomMeal) => Promise<Result<CustomMeal>>;
   /** Fired after a successful save, for the page's toast. */
   onSaved: (name: string) => void;
@@ -84,6 +94,7 @@ function toStoredMeal(
 export function MealBuilder({
   pool,
   existing,
+  existingKnown,
   onSave,
   onSaved,
 }: MealBuilderProps) {
@@ -118,6 +129,20 @@ export function MealBuilder({
         : null,
     [existing, trimmed],
   );
+
+  /**
+   * We were asked to save under a name we could not check for (§21f).
+   *
+   * `saveCustomMeal` upserts on `name`, so a save ALWAYS replaces a row of the
+   * same name — whether or not we managed to read the library and warn about
+   * it. Staying silent here would let a failed read turn "save my new meal"
+   * into "replace a meal I forgot I had", with no way to tell afterwards.
+   *
+   * It warns rather than blocks. Refusing the save would punish the user for a
+   * transient network blip and lose the meal they just built, which is a worse
+   * trade than a line of text — same reasoning as Phase 3 §6's Undo-not-confirm.
+   */
+  const uncheckable = !existingKnown && trimmed.length > 0;
 
   const zeroRows = composer.views.filter((v) => v.qty === 0);
   /**
@@ -372,6 +397,13 @@ export function MealBuilder({
           {clash && (
             <p role="status" className="text-label text-amber">
               A meal named “{clash.name}” already exists. Saving replaces it.
+            </p>
+          )}
+
+          {uncheckable && (
+            <p role="status" className="text-label text-amber">
+              Your library couldn’t be read, so we can’t tell whether “{trimmed}”
+              already exists. Saving replaces any meal of that name.
             </p>
           )}
 

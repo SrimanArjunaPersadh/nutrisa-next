@@ -242,6 +242,14 @@ export default function LibraryPage() {
           <MealBuilder
             pool={pool}
             existing={library.meals}
+            /* `ready` and `empty` are the two states in which the read
+               SUCCEEDED, so `meals` is the whole library and the absence of a
+               clash means something. `loading` and `error` both leave it
+               partial or stale (§8a keeps the last good rows), and the builder
+               says so rather than implying a check it could not run. */
+            existingKnown={
+              library.state === "ready" || library.state === "empty"
+            }
             onSave={library.save}
             onSaved={(name) =>
               setToast({ text: `Saved ${name} to your library`, tone: "info" })

@@ -25,7 +25,10 @@ const saved = (meal: NewCustomMeal): CustomMeal => ({
   id: "new-id",
 });
 
-function setup(existing: readonly CustomMeal[] = []) {
+function setup(
+  existing: readonly CustomMeal[] = [],
+  existingKnown = true,
+) {
   const onSave = vi.fn(
     async (meal: NewCustomMeal): Promise<Result<CustomMeal>> => ({
       ok: true,
@@ -38,6 +41,7 @@ function setup(existing: readonly CustomMeal[] = []) {
     <MealBuilder
       pool={POOL}
       existing={existing}
+      existingKnown={existingKnown}
       onSave={onSave}
       onSaved={onSaved}
     />,
@@ -128,7 +132,13 @@ describe("MealBuilder — what it stores", () => {
       }),
     );
     render(
-      <MealBuilder pool={POOL} existing={[]} onSave={onSave} onSaved={vi.fn()} />,
+      <MealBuilder
+        pool={POOL}
+        existing={[]}
+        existingKnown
+        onSave={onSave}
+        onSaved={vi.fn()}
+      />,
     );
 
     addFood("Vejoy Tofu");
@@ -175,6 +185,32 @@ describe("MealBuilder — the guards that replaced confirm()", () => {
 
     fireEvent.click(screen.getByText("Save anyway"));
     await waitFor(() => expect(onSave).toHaveBeenCalledTimes(1));
+  });
+
+  it("says so when the library couldn't be read, instead of implying a check", async () => {
+    // §21f. `saveCustomMeal` upserts on `name`, so a save replaces a row of
+    // that name whether or not we managed to read the library. Silence would
+    // turn "save my new meal" into "replace a meal I forgot I had".
+    const { onSave } = setup([], false);
+
+    addFood("Vejoy Tofu");
+    nameIt("Might Already Exist");
+
+    expect(document.body.textContent).toContain("couldn’t be read");
+    expect(document.body.textContent).toContain("Might Already Exist");
+
+    // It WARNS, it does not block — losing the meal you just built to a
+    // transient network blip is the worse trade (Phase 3 §6 reasoning).
+    fireEvent.click(screen.getByText("Save to Library"));
+    await waitFor(() => expect(onSave).toHaveBeenCalledTimes(1));
+  });
+
+  it("stays quiet about the read while no name has been typed", () => {
+    setup([], false);
+    addFood("Vejoy Tofu");
+
+    // Nothing to warn about yet — the warning is about a specific name.
+    expect(document.body.textContent).not.toContain("couldn’t be read");
   });
 
   it("saves an overwrite under the EXISTING row's exact casing", async () => {

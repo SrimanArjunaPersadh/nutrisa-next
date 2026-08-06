@@ -134,6 +134,16 @@ export function AddCustomFood({
     const macros = [kcal, num(form.pro) ?? 0, num(form.carb) ?? 0, num(form.fat) ?? 0];
     if (macros.some((m) => m < 0)) return "Macros cannot be negative.";
 
+    // `NUM_RE` allows a leading `-`, and the check above covers only the four
+    // macros — so a negative default quantity would sail through, as it does in
+    // the old app (1776/1799 parse it with no range check). A food saved at
+    // `defaultQty: -100` starts every composer row at -100, because
+    // `defaultQty || 100` treats it as a perfectly good number, and every macro
+    // it contributes is negative. Cheap to close, and nothing legitimate is
+    // lost: a quantity below zero has no meaning.
+    const qty = num(form.qty);
+    if (qty !== null && qty < 0) return "Default quantity cannot be negative.";
+
     if (perUnitMode) {
       // THE GRAM-UNIT GUARD (old app 1770, eng review D7's write side). A
       // per-unit food saved with unit `g` makes `isGramUnit` true, so
