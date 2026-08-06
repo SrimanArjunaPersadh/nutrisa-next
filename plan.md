@@ -18,6 +18,21 @@ previous one is merged.
 | [ ] | 8 — Dashboard (trend hero, macro bars, weight chart) | `phase-8-dashboard` | |
 | [ ] | 9 — Four-states sweep, PWA polish, side-by-side cutover | `phase-9-cutover` | |
 
+Scope notes for Phase 5, recorded in `docs/PHASE-5-DECISIONS.md`:
+
+- **The Add Custom Food form ships manual entry ONLY** (§1). The barcode field,
+  the Open Food Facts lookup, the camera viewfinder and the `cfServing`
+  per-serving view all arrive in Phase 6; "photograph the label" in Phase 7. No
+  control is stubbed — a button that does nothing is worse than a button that is
+  absent.
+- **Food identity is the row id, not the name** (§6). This diverges from the old
+  app, which merges a custom food and a built-in of the same name into one
+  composer row and uses one food's macros for both. It is a divergence that
+  changes a NUMBER, allowed because the old number came from a defect rather than
+  a rule, and because no existing row exhibits the collision.
+- **Quick Log and the log editor's "Add Item" land on the Nutrition page**, not
+  the Library — that is where the old app puts them (2843, 3403).
+
 Two scope changes made during Phase 4, both recorded in
 `docs/PHASE-4-DECISIONS.md` and amending the Plan's closed feature inventory (§3):
 

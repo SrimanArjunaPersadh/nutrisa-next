@@ -13,6 +13,7 @@ Legend: `[ ]` not done · `[x]` verified on phone · `[-]` not applicable
 | Nutrition | [x] | [x] | [x] | [x] |
 | Weight | [x] | [x] | [x] | [x] |
 | Library / Meal Builder | [ ] | [ ] | [ ] | [ ] |
+| Quick Log (on Nutrition) | [-] | [-] | [ ] | [ ] |
 | Add-food: barcode scan | [ ] | [ ] | [ ] | [ ] |
 | Add-food: OCR photo | [ ] | [ ] | [ ] | [ ] |
 | Add-food: manual entry | [ ] | [ ] | [ ] | [ ] |
@@ -25,6 +26,13 @@ do (§4.4) instead of apologising vaguely. Nothing in the layer fails silently, 
 nothing queues a failed write locally (§0.3).
 
 Notes on specific cells:
+- **Quick Log Empty / Loading are `[-]`**: it composes rows in memory and reads
+  nothing of its own — the food pool is the page's, and its states are already
+  covered by the Library and Nutrition rows. Its Error cell is the failed-log
+  toast, and the rule that a failed log KEEPS the rows (PHASE-5-DECISIONS §19).
+- **Library / Meal Builder** is four surfaces in one row: saved meals, custom
+  foods, the builder and the Add Custom Food form. All four of each must hold
+  before the cell is ticked; PHASE-5-DECISIONS §19 lists what each one shows.
 - **OCR / barcode Loading**: a live "transcribing label…" / "scanning…" indicator is
   correct here — a 3–8s silent wait reads as broken.
 - **OCR Error**: MUST fall back to blank manual entry WITH a visible "couldn't read
